@@ -19,6 +19,8 @@ const LEMMA_OVERRIDES = new Map([
   // Required deterministic choice: treat the common inflected form as use,
   // even though COCA also lists adjectival "used" as its own lemma.
   ['used', 'use'],
+  ['ran', 'run'],
+  ['running', 'run'],
   ['children', 'child'],
   ['men', 'man'],
   ['women', 'woman'],

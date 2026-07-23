@@ -33,7 +33,8 @@ Text analysis runs in the browser. There is no backend, login, account system, o
 
 ## Known Limitations
 
-- Lightweight deterministic lemmatization only; ambiguous or unsupported forms fall back to the original token.
+- Lightweight deterministic lemmatization only. Without contextual part-of-speech tagging, ambiguous common inflections
+  such as `used` and `running` use fixed mappings to their base lemmas; unsupported forms fall back to the original token.
 - Limited tokenizer.
 - Uses a Top 5K COCA-derived frequency list rather than the full COCA corpus.
 
