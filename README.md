@@ -17,10 +17,9 @@ Workflow: paste English text -> analyze locally -> compare with COCA Top 5K.
 
 - Total words
 - Lexical tokens
-- Unique lemmas
-- COCA coverage
-- Repetition per 100 words
-- Lemma rows with observed forms, essay count, rate per 100 words, derived lemma rank, and aggregated COCA frequency
+- Unique analyzed lemmas
+- COCA coverage of analyzed tokens
+- Lemma rows with observed forms, essay count, rate per 100 total words, derived lemma rank, and aggregated COCA frequency
 
 ## Stack
 

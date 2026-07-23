@@ -53,12 +53,18 @@ function App() {
 
             <div className="summary-grid" aria-label="Analysis summary">
               <SummaryCard label="Total words" value={formatNumber.format(analysis.totalWordCount)} />
-              <SummaryCard label="Unique lemmas" value={formatNumber.format(analysis.uniqueLemmaCount)} />
               <SummaryCard
-                label="Repetition per 100 words"
-                value={formatDecimal.format(analysis.repeatedLemmaRatePer100Words)}
+                label="Lexical tokens"
+                value={formatNumber.format(analysis.lexicalTokenCount)}
               />
-              <SummaryCard label="COCA coverage" value={`${formatDecimal.format(analysis.cocaCoveragePct)}%`} />
+              <SummaryCard
+                label="Unique analyzed lemmas"
+                value={formatNumber.format(analysis.uniqueLemmaCount)}
+              />
+              <SummaryCard
+                label="COCA coverage of analyzed tokens"
+                value={`${formatDecimal.format(analysis.cocaCoveragePct)}%`}
+              />
             </div>
 
             {analysis.lemmas.length > 0 ? (
@@ -69,7 +75,7 @@ function App() {
                       <th scope="col">Lemma</th>
                       <th scope="col">Observed forms</th>
                       <th scope="col">Essay count</th>
-                      <th scope="col">Rate per 100</th>
+                      <th scope="col">Rate per 100 total words</th>
                       <th scope="col">Derived lemma rank</th>
                       <th scope="col">Aggregated COCA frequency</th>
                     </tr>

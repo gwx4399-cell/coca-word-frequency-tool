@@ -94,17 +94,13 @@ export const STOP_WORDS = new Set([
   'must',
 ]);
 
-const WORD_PATTERN = /[a-z]+(?:'[a-z]+)?/gi;
+const WORD_PATTERN = /[a-z]+(?:['’][a-z]+)?/gi;
 
 export function tokenize(text: string): TextToken[] {
   const matches = text.matchAll(WORD_PATTERN);
 
   return Array.from(matches, ([surface]) => ({
     surface,
-    normalized: surface.toLowerCase(),
+    normalized: surface.toLowerCase().replace(/’/g, "'"),
   }));
-}
-
-export function isLexicalToken(token: TextToken): boolean {
-  return !STOP_WORDS.has(token.normalized);
 }

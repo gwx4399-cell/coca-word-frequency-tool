@@ -34,6 +34,5 @@ export type EssayAnalysis = {
   lexicalTokenCount: number;
   uniqueLemmaCount: number;
   cocaCoveragePct: number;
-  repeatedLemmaRatePer100Words: number;
   lemmas: LemmaAnalysis[];
 };

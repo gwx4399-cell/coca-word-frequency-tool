@@ -1,8 +1,24 @@
 import type { CocaLemmaMap } from './coca';
-import { isLexicalToken, tokenize } from './tokenize';
+import { STOP_WORDS, tokenize } from './tokenize';
 import type { EssayAnalysis, LemmaAnalysis } from '../types/analysis';
 
-const IRREGULAR_LEMMAS = new Map([
+const LEMMA_OVERRIDES = new Map([
+  ['am', 'be'],
+  ['is', 'be'],
+  ['are', 'be'],
+  ['was', 'be'],
+  ['were', 'be'],
+  ['been', 'be'],
+  ['being', 'be'],
+  ['has', 'have'],
+  ['had', 'have'],
+  ['having', 'have'],
+  ['does', 'do'],
+  ['did', 'do'],
+  ['doing', 'do'],
+  // Required deterministic choice: treat the common inflected form as use,
+  // even though COCA also lists adjectival "used" as its own lemma.
+  ['used', 'use'],
   ['children', 'child'],
   ['men', 'man'],
   ['women', 'woman'],
@@ -11,16 +27,22 @@ const IRREGULAR_LEMMAS = new Map([
   ['geese', 'goose'],
   ['teeth', 'tooth'],
   ['feet', 'foot'],
+  ['went', 'go'],
+  ['gone', 'go'],
 ]);
 
 export function analyzeEssay(text: string, cocaEntries: CocaLemmaMap): EssayAnalysis {
   const tokens = tokenize(text);
-  const lexicalTokens = tokens.filter(isLexicalToken);
+  const analyzedTokens = tokens
+    .map((token) => ({
+      token,
+      lemma: lemmatizeWord(token.normalized, cocaEntries),
+    }))
+    .filter(({ lemma }) => !STOP_WORDS.has(lemma));
   const lemmaCounts = new Map<string, { observedForms: string[]; count: number }>();
-  const coveredTokenCount = lexicalTokens.filter((token) => cocaEntries.has(lemmatizeWord(token.normalized, cocaEntries))).length;
+  const coveredTokenCount = analyzedTokens.filter(({ lemma }) => cocaEntries.has(lemma)).length;
 
-  lexicalTokens.forEach((token) => {
-    const lemma = lemmatizeWord(token.normalized, cocaEntries);
+  analyzedTokens.forEach(({ token, lemma }) => {
     const current = lemmaCounts.get(lemma) ?? { observedForms: [], count: 0 };
 
     current.count += 1;
@@ -33,7 +55,7 @@ export function analyzeEssay(text: string, cocaEntries: CocaLemmaMap): EssayAnal
   });
 
   const totalWordCount = tokens.length;
-  const lexicalTokenCount = lexicalTokens.length;
+  const lexicalTokenCount = analyzedTokens.length;
   const uniqueLemmaCount = lemmaCounts.size;
   const lemmas = Array.from(lemmaCounts, ([lemma, value]) => toLemmaAnalysis(lemma, value, totalWordCount, cocaEntries)).sort(
     (a, b) => {
@@ -62,14 +84,12 @@ export function analyzeEssay(text: string, cocaEntries: CocaLemmaMap): EssayAnal
     lexicalTokenCount,
     uniqueLemmaCount,
     cocaCoveragePct: lexicalTokenCount === 0 ? 0 : (coveredTokenCount / lexicalTokenCount) * 100,
-    repeatedLemmaRatePer100Words:
-      totalWordCount === 0 ? 0 : ((lexicalTokenCount - uniqueLemmaCount) / totalWordCount) * 100,
     lemmas,
   };
 }
 
 export function lemmatizeWord(word: string, cocaEntries: CocaLemmaMap): string {
-  const normalized = word.toLowerCase();
+  const normalized = word.toLowerCase().replace(/’/g, "'");
 
   if (normalized.includes("'")) {
     return normalized;
@@ -105,46 +125,57 @@ function toLemmaAnalysis(
 }
 
 function getLemmaCandidates(word: string): string[] {
-  const candidates = new Set<string>([word]);
-  const irregular = IRREGULAR_LEMMAS.get(word);
+  const candidates: string[] = [];
+  const override = LEMMA_OVERRIDES.get(word);
 
-  if (irregular) {
-    candidates.add(irregular);
+  if (override) {
+    addCandidate(candidates, override);
   }
 
+  // Preserve an exact COCA lemma when a surface form is genuinely ambiguous.
+  addCandidate(candidates, word);
+
   if (word.length > 4 && word.endsWith('ies')) {
-    candidates.add(`${word.slice(0, -3)}y`);
+    addCandidate(candidates, `${word.slice(0, -3)}y`);
   }
 
   if (word.length > 4 && word.endsWith('ied')) {
-    candidates.add(`${word.slice(0, -3)}y`);
+    addCandidate(candidates, `${word.slice(0, -3)}y`);
   }
 
-  if (word.length > 5 && word.endsWith('ing')) {
+  if (word.length > 4 && word.endsWith('ing')) {
     addStemCandidates(candidates, word.slice(0, -3));
   }
 
-  if (word.length > 4 && word.endsWith('ed')) {
+  if (word.length > 3 && word.endsWith('ed')) {
     addStemCandidates(candidates, word.slice(0, -2));
   }
 
   if (word.length > 4 && word.endsWith('es')) {
-    candidates.add(word.slice(0, -1));
-    candidates.add(word.slice(0, -2));
+    addCandidate(candidates, word.slice(0, -1));
+    addCandidate(candidates, word.slice(0, -2));
   }
 
   if (word.length > 3 && word.endsWith('s') && !word.endsWith('ss')) {
-    candidates.add(word.slice(0, -1));
+    addCandidate(candidates, word.slice(0, -1));
   }
 
-  return Array.from(candidates);
+  return candidates;
 }
 
-function addStemCandidates(candidates: Set<string>, stem: string): void {
-  candidates.add(stem);
-  candidates.add(`${stem}e`);
-
+function addStemCandidates(candidates: string[], stem: string): void {
   if (stem.length > 2 && stem[stem.length - 1] === stem[stem.length - 2]) {
-    candidates.add(stem.slice(0, -1));
+    addCandidate(candidates, stem.slice(0, -1));
+  }
+
+  // Try restored silent-e before the raw stem so using/caring do not
+  // incorrectly match the valid COCA lemmas us/car.
+  addCandidate(candidates, `${stem}e`);
+  addCandidate(candidates, stem);
+}
+
+function addCandidate(candidates: string[], candidate: string): void {
+  if (!candidates.includes(candidate)) {
+    candidates.push(candidate);
   }
 }

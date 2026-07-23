@@ -9,7 +9,17 @@ const testCocaCsv = `rank,lemma,PoS,freq,perMil
 4,repeat,v,40,4
 5,don't,v,30,3
 6,stop,v,20,2
-7,decide,n,50,5`;
+7,decide,n,50,5
+8,use,v,45,4.5
+9,us,p,44,4.4
+10,care,v,43,4.3
+11,car,n,42,4.2
+12,child,n,41,4.1
+13,man,n,40,4
+14,go,v,39,3.9
+15,be,v,38,3.8
+16,have,v,37,3.7
+17,do,v,36,3.6`;
 
 const cocaEntries = parseCocaCsv(testCocaCsv);
 
@@ -40,17 +50,16 @@ describe('analyzeEssay', () => {
       lexicalTokenCount: 0,
       uniqueLemmaCount: 0,
       cocaCoveragePct: 0,
-      repeatedLemmaRatePer100Words: 0,
       lemmas: [],
     });
   });
 
-  it('keeps apostrophe tokens deterministic', () => {
-    const result = analyzeEssay("Don't stop, don't.", cocaEntries);
+  it('normalizes curly apostrophes while preserving observed forms', () => {
+    const result = analyzeEssay("Don't stop, don’t.", cocaEntries);
 
     expect(result.totalWordCount).toBe(3);
     expect(result.lemmas.find((entry) => entry.lemma === "don't")).toMatchObject({
-      observedForms: ["Don't", "don't"],
+      observedForms: ["Don't", 'don’t'],
       count: 2,
     });
   });
@@ -63,6 +72,55 @@ describe('analyzeEssay', () => {
       observedForms: ['decide', 'decides', 'decided', 'deciding'],
       count: 4,
     });
+  });
+
+  it('groups use inflections without mapping using to us', () => {
+    const result = analyzeEssay('use uses used using', cocaEntries);
+
+    expect(result.lemmas).toEqual([
+      expect.objectContaining({
+        lemma: 'use',
+        observedForms: ['use', 'uses', 'used', 'using'],
+        count: 4,
+      }),
+    ]);
+  });
+
+  it('groups care inflections without mapping caring to car', () => {
+    const result = analyzeEssay('care cared caring', cocaEntries);
+
+    expect(result.lemmas).toEqual([
+      expect.objectContaining({
+        lemma: 'care',
+        observedForms: ['care', 'cared', 'caring'],
+        count: 3,
+      }),
+    ]);
+  });
+
+  it('groups supported irregular forms under their base lemmas', () => {
+    const result = analyzeEssay('child children man men go went gone', cocaEntries);
+
+    expect(result.lemmas.find((entry) => entry.lemma === 'child')).toMatchObject({
+      observedForms: ['child', 'children'],
+      count: 2,
+    });
+    expect(result.lemmas.find((entry) => entry.lemma === 'man')).toMatchObject({
+      observedForms: ['man', 'men'],
+      count: 2,
+    });
+    expect(result.lemmas.find((entry) => entry.lemma === 'go')).toMatchObject({
+      observedForms: ['go', 'went', 'gone'],
+      count: 3,
+    });
+  });
+
+  it('filters stop words after lemmatization', () => {
+    const result = analyzeEssay('Being having doing', cocaEntries);
+
+    expect(result.totalWordCount).toBe(3);
+    expect(result.lexicalTokenCount).toBe(0);
+    expect(result.lemmas).toEqual([]);
   });
 
   it('aggregates duplicate COCA lemma rows instead of overwriting them', () => {
