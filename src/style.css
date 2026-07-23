@@ -117,6 +117,35 @@ h1 {
   line-height: 1.6;
 }
 
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.summary-card {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.summary-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summary-card strong {
+  color: #0f172a;
+  font-size: 24px;
+}
+
 .frequency-table-wrapper {
   overflow-x: auto;
   border: 1px solid #e5e7eb;
@@ -126,7 +155,7 @@ h1 {
 
 .frequency-table {
   width: 100%;
-  min-width: 680px;
+  min-width: 980px;
   border-collapse: collapse;
   color: #0f172a;
 }
@@ -156,7 +185,7 @@ h1 {
   border-bottom: 0;
 }
 
-.frequency-table td:nth-child(2) {
+.frequency-table td:nth-child(3) {
   font-weight: 700;
 }
 
@@ -178,8 +207,12 @@ h1 {
     border-radius: 22px;
   }
 
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
   .frequency-table {
-    min-width: 560px;
+    min-width: 860px;
   }
 
   .frequency-table th,
