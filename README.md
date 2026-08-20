@@ -6,12 +6,14 @@ DEEA 是一个浏览器端原型工具，用于将英文文本中的重复词与
 
 ## What It Does
 
-- Paste English text into the page.
+- Enter an essay title, writing date, optional task/prompt, and original essay text.
 - Analyze the text locally in the browser.
-- Compare counted lemmas with the COCA Top 5K list while preserving observed surface forms as text evidence.
-- Display the comparison results in a table.
+- After a valid analysis, save the essay metadata and original text to this browser.
+- Open History to list saved essays, inspect the original text, and recompute analysis with the current analyzer.
+- Records persist across page refreshes in this browser.
+- Delete a saved essay only after confirming in an in-page dialog.
 
-Workflow: paste English text -> analyze locally -> compare with COCA Top 5K.
+Workflow: fill essay details -> analyze locally -> optionally save to this browser -> reopen from History.
 
 ## Key Outputs
 
@@ -29,7 +31,7 @@ Workflow: paste English text -> analyze locally -> compare with COCA Top 5K.
 
 ## Privacy
 
-Text analysis runs in the browser. There is no backend, login, account system, or server-side text submission in this prototype.
+Essay history is stored only in this browser's `localStorage`. Text analysis and storage both run locally. Essays are not uploaded to a server. Clearing browser data permanently deletes saved essay history. There is no backend, login, account system, or server-side text submission in this prototype.
 
 ## Known Limitations
 
@@ -71,3 +73,10 @@ lemma+PoS rank from the CSV.
 ## Scope
 
 This is a word-frequency comparison prototype, not an AI grading or writing-evaluation product.
+
+Not implemented in this version:
+
+- Cross-essay trends
+- Persistent issue identification
+- AI suggestions
+- Accounts, a backend, or cross-device sync
