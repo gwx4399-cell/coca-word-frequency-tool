@@ -126,11 +126,16 @@ function App() {
     }
 
     try {
-      repository.deleteEssay(essayPendingDeletion.id);
+      const deletedEssay = essayPendingDeletion;
+      repository.deleteEssay(deletedEssay.id);
       setEssays(repository.listEssays());
 
-      if (selectedEssayId === essayPendingDeletion.id) {
+      if (selectedEssayId === deletedEssay.id) {
         setSelectedEssayId(null);
+      }
+
+      if (getEssaySignature(deletedEssay) === currentSignature) {
+        setSavedSignature(null);
       }
 
       setEssayPendingDeletion(null);
