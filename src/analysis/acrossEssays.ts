@@ -35,6 +35,7 @@ export type PilotGroup = {
 
 export type AcrossEssayAnalysis = {
   essayCount: number;
+  words: CrossEssayWord[];
   repeatedWords: CrossEssayWord[];
   pilotGroup: PilotGroup;
 };
@@ -69,9 +70,9 @@ export function analyzeAcrossEssays(essays: EssayRecord[], cocaEntries: CocaLemm
     }
   }
 
-  const repeatedWords = [...byLemma.values()]
-    .filter((word) => word.essayCount >= 2 && word.totalCount >= 3)
+  const words = [...byLemma.values()]
     .sort((a, b) => b.essayCount - a.essayCount || b.totalCount - a.totalCount || a.lemma.localeCompare(b.lemma));
+  const repeatedWords = words.filter((word) => word.essayCount >= 2 && word.totalCount >= 3);
 
   const groupWords = IMPORTANCE_WORDS.map((lemma) => byLemma.get(lemma));
   const totalCount = groupWords.reduce((sum, word) => sum + (word?.totalCount ?? 0), 0);
@@ -85,6 +86,7 @@ export function analyzeAcrossEssays(essays: EssayRecord[], cocaEntries: CocaLemm
 
   return {
     essayCount: essays.length,
+    words,
     repeatedWords,
     pilotGroup: {
       label: '表达重要性 / Importance (pilot)',
