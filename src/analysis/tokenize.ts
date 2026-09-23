@@ -99,8 +99,10 @@ const WORD_PATTERN = /[a-z]+(?:['’][a-z]+)?/gi;
 export function tokenize(text: string): TextToken[] {
   const matches = text.matchAll(WORD_PATTERN);
 
-  return Array.from(matches, ([surface]) => ({
-    surface,
-    normalized: surface.toLowerCase().replace(/’/g, "'"),
+  return Array.from(matches, (match) => ({
+    surface: match[0],
+    normalized: match[0].toLowerCase().replace(/’/g, "'"),
+    start: match.index,
+    end: match.index + match[0].length,
   }));
 }
