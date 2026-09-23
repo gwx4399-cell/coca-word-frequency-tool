@@ -1,6 +1,6 @@
 # DEEA v0.3 Product Requirements
 
-**Status:** Implemented on `feature/across-essay-pilot-v0-3`, pending review and merge. **Date:** 2026-09-23.  
+**Status:** Functionality merged into `main` through PR #6; five example essays and design drawing added on a separate branch, pending review. **Date:** 2026-09-23.  
 **Iteration:** A reusable cross-essay count and one bounded pilot word group. The application is still rule-based and local; no AI model is connected.
 **Pull request:** [v0.3 cross-essay analysis and pilot #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6).
 
@@ -43,6 +43,8 @@ There is no genre or author field. All essays saved in one browser are aggregate
 
 Engineering acceptance checks hidden low counts, retained aggregate counts, per-essay evidence, recalculation after deletion, zero denominators and links to originals. Passing them confirms rule behavior, **not educational effectiveness**. Next, teachers and learners should review real same-genre samples: were repetitions prompted by the topic, did the four words serve comparable semantic functions, and could the evidence support one useful writing exercise? Record false positives before expanding the group inventory.
 
+The [five original IELTS Task 2 demonstration essays](../../../data/demo/IELTS_TASK2_FIVE_ESSAYS.md) let reviewers reproduce the hidden-low-count case and the pilot denominator. The [product wireframe](./DEEA_PRODUCT_DESIGN_EN.md) uses computed values from these fictional essays. They are not preloaded into anyone's browser, are not assessed IELTS model answers, and this iteration does not add a bulk import feature.
+
 Out of scope: semantic-opportunity annotation, contextual POS tagging, AWL/UWL, AI-generated suggestions, persistent targets, +1/+3/+5 post-target outcomes, classrooms, accounts and cross-device sync.
 
-Related: [Technical design](./DEEA_TECHNICAL_DESIGN_EN.md) · [中文 PRD](./DEEA_PRD_CN.md) · [v0.2 requirements](../v0.2/DEEA_PRD_EN.md)
+Related: [Technical design](./DEEA_TECHNICAL_DESIGN_EN.md) · [product wireframe](./DEEA_PRODUCT_DESIGN_EN.md) · [中文 PRD](./DEEA_PRD_CN.md) · [v0.2 requirements](../v0.2/DEEA_PRD_EN.md)
