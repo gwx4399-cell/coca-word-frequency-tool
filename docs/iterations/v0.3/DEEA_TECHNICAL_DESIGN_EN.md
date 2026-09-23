@@ -20,10 +20,11 @@ flowchart TD
 | Contract | Fields and use |
 | --- | --- |
 | `CrossEssayWord` | lemma, total count, number of essays, deduplicated observed forms and occurrences. |
+| `AcrossEssayAnalysis.words` | Full cross-essay results for every analyzed lemma, including total counts of one or two, available to later rules but not shown as standalone UI rows. |
 | `EssayOccurrence` | essay ID, title, writing date, count and observed forms. The ID links evidence back to History. |
 | `PilotGroup` | four member counts/shares, group total, number of essays with a member, leader and display sufficiency. |
 
-Each `analyzeEssay` result contains one row per lemma. Accumulate **all** rows before filtering; a count of one or two in a single essay can help form a cross-essay total. The display list uses `essayCount >= 2 && totalCount >= 3` and sorts by essay count descending, total count descending, then lemma alphabetically. Per-essay occurrences retain repository order. Separately, the single-essay UI applies `analysis.lemmas.filter(row => row.count >= 3)` without altering the analyzer or its COCA fields.
+Each `analyzeEssay` result contains one row per lemma. Accumulate **all** rows before filtering; a count of one or two in a single essay can help form a cross-essay total. Keep the unfiltered `words` result for later features; its display subset uses `essayCount >= 2 && totalCount >= 3` and sorts by essay count descending, total count descending, then lemma alphabetically. Per-essay occurrences retain repository order. Separately, the single-essay UI applies `analysis.lemmas.filter(row => row.count >= 3)` without altering the analyzer or its COCA fields.
 
 ## 2. Pilot group and counterexamples
 
