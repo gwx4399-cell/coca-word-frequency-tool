@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import cocaCsv from '../data/COCA_WordFrequency_top5000.csv?raw';
 import { analyzeEssay } from './analysis/analyzeEssay';
 import { parseCocaCsv, type CocaLemmaMap } from './analysis/coca';
+import { getWritingAdvice, type WritingAdvice } from './analysis/writingAdvice';
 import {
   EssayRepository,
   EssayValidationError,
@@ -12,10 +13,6 @@ import type { CreateEssayInput, EssayRecord, EssayValidationErrors } from './typ
 import './style.css';
 
 const formatNumber = new Intl.NumberFormat('en-US');
-const formatDecimal = new Intl.NumberFormat('en-US', {
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 2,
-});
 
 const COCA_ENTRIES = parseCocaCsv(cocaCsv);
 
@@ -34,19 +31,12 @@ function App() {
   }));
   const [fieldErrors, setFieldErrors] = useState<EssayValidationErrors>({});
   const [analysis, setAnalysis] = useState<EssayAnalysis | null>(null);
-  const [analyzedText, setAnalyzedText] = useState<string | null>(null);
-  const [savedSignature, setSavedSignature] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [essays, setEssays] = useState<EssayRecord[]>(() => repository.listEssays());
+  const writingAdvice = useMemo(() => getWritingAdvice(essays, cocaEntries), [essays, cocaEntries]);
   const [selectedEssayId, setSelectedEssayId] = useState<string | null>(null);
   const [essayPendingDeletion, setEssayPendingDeletion] = useState<EssayRecord | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-
-  const currentSignature = getEssaySignature(form);
-  const canSave =
-    analysis !== null &&
-    analyzedText === form.text &&
-    savedSignature !== currentSignature;
 
   const updateField = (field: keyof CreateEssayInput, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -54,7 +44,6 @@ function App() {
 
     if (field === 'text') {
       setAnalysis(null);
-      setAnalyzedText(null);
     }
 
     if (field === 'title' || field === 'writtenAt' || field === 'text') {
@@ -72,41 +61,22 @@ function App() {
 
     if (Object.keys(errors).length > 0) {
       setAnalysis(null);
-      setAnalyzedText(null);
       setFeedback({ kind: 'error', message: 'Correct the highlighted fields before analyzing.' });
       return;
     }
 
     setAnalysis(analyzeEssay(form.text, cocaEntries));
-    setAnalyzedText(form.text);
-    setFeedback({ kind: 'success', message: 'Analysis complete. This essay can now be saved.' });
-  };
-
-  const handleSave = () => {
-    const errors = validateEssayInput(form);
-    setFieldErrors(errors);
-
-    if (Object.keys(errors).length > 0) {
-      setFeedback({ kind: 'error', message: 'Correct the highlighted fields before saving.' });
-      return;
-    }
-
-    if (!analysis || analyzedText !== form.text) {
-      setFeedback({ kind: 'error', message: 'Analyze the current essay text before saving.' });
-      return;
-    }
-
     try {
       const savedEssay = repository.createEssay(form);
       setEssays(repository.listEssays());
-      setSavedSignature(currentSignature);
-      setFeedback({ kind: 'success', message: `"${savedEssay.title}" is saved in this browser.` });
+      setFeedback({ kind: 'success', message: `Analysis complete. "${savedEssay.title}" is saved in this browser.` });
     } catch (error) {
       if (error instanceof EssayValidationError) {
         setFieldErrors(error.fieldErrors);
+        setFeedback({ kind: 'error', message: error.fieldErrors.title ?? 'The essay could not be saved.' });
+      } else {
+        setFeedback({ kind: 'error', message: 'The essay could not be saved in this browser.' });
       }
-
-      setFeedback({ kind: 'error', message: 'The essay could not be saved in this browser.' });
     }
   };
 
@@ -134,10 +104,6 @@ function App() {
         setSelectedEssayId(null);
       }
 
-      if (getEssaySignature(deletedEssay) === currentSignature) {
-        setSavedSignature(null);
-      }
-
       setEssayPendingDeletion(null);
       setDeleteError(null);
     } catch {
@@ -149,7 +115,7 @@ function App() {
     <main className="home">
       <section className="word-tool" aria-labelledby="page-title">
         <h1 id="page-title">DEEA - Academic English Evolution Agent</h1>
-        <p className="subtitle">Analyze an English essay and optionally keep it in this browser.</p>
+        <p className="subtitle">Analyze an English essay and save it in this browser.</p>
 
         <nav className="view-tabs" aria-label="Essay workspace">
           <button
@@ -170,9 +136,10 @@ function App() {
           </button>
         </nav>
 
+        {writingAdvice && <WritingAdvicePanel advice={writingAdvice} />}
+
         {activeView === 'new' ? (
-          <section className="workspace-section" aria-labelledby="new-essay-title">
-            <h2 id="new-essay-title">New essay</h2>
+          <section className="workspace-section" aria-label="New essay form">
             <div className="form-grid">
               <FormField
                 id="essay-title"
@@ -233,10 +200,7 @@ function App() {
 
             <div className="form-actions">
               <button className="primary-button" type="button" onClick={handleAnalyze}>
-                Analyze
-              </button>
-              <button className="secondary-button" type="button" onClick={handleSave} disabled={!canSave}>
-                {savedSignature === currentSignature ? 'Saved' : 'Save to history'}
+                Analyze and save
               </button>
             </div>
 
@@ -407,7 +371,6 @@ function HistoryView({
                 </span>
                 <span className="history-metrics">
                   <span>{formatNumber.format(summary.totalWordCount)} total words</span>
-                  <span>{formatDecimal.format(summary.cocaCoveragePct)}% COCA coverage</span>
                 </span>
               </button>
               <button className="delete-button" type="button" onClick={() => onDelete(essay)}>
@@ -427,20 +390,7 @@ function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
   return (
     <section className="results" aria-live="polite" aria-label="Essay analysis results">
       <h2>Essay Analysis</h2>
-      <p className="coca-note">
-        COCA values are aggregated by lemma across all listed parts of speech. Rank shown here is a derived lemma rank
-        based on aggregated frequency, not the original lemma+PoS rank from the CSV.
-      </p>
-
-      <div className="summary-grid" aria-label="Analysis summary">
-        <SummaryCard label="Total words" value={formatNumber.format(analysis.totalWordCount)} />
-        <SummaryCard label="Lexical tokens" value={formatNumber.format(analysis.lexicalTokenCount)} />
-        <SummaryCard label="Unique analyzed lemmas" value={formatNumber.format(analysis.uniqueLemmaCount)} />
-        <SummaryCard
-          label="COCA coverage of analyzed tokens"
-          value={`${formatDecimal.format(analysis.cocaCoveragePct)}%`}
-        />
-      </div>
+      <p className="word-count">{formatNumber.format(analysis.totalWordCount)} total words</p>
 
       {analysis.lemmas.length > 0 ? (
         <div className="frequency-table-wrapper">
@@ -449,10 +399,7 @@ function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
               <tr>
                 <th scope="col">Lemma</th>
                 <th scope="col">Observed forms</th>
-                <th scope="col">Essay count</th>
-                <th scope="col">Rate per 100 total words</th>
-                <th scope="col">Derived lemma rank</th>
-                <th scope="col">Aggregated COCA frequency</th>
+                <th scope="col">Count in this essay</th>
               </tr>
             </thead>
             <tbody>
@@ -461,17 +408,6 @@ function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
                   <th scope="row">{lemmaResult.lemma}</th>
                   <td>{lemmaResult.observedForms.join(', ')}</td>
                   <td>{formatNumber.format(lemmaResult.count)}</td>
-                  <td>{formatDecimal.format(lemmaResult.ratePer100Words)}</td>
-                  <td>
-                    {lemmaResult.derivedLemmaRank
-                      ? `#${formatNumber.format(lemmaResult.derivedLemmaRank)}`
-                      : 'Not in COCA Top 5K'}
-                  </td>
-                  <td>
-                    {lemmaResult.aggregatedCocaFrequency
-                      ? formatNumber.format(lemmaResult.aggregatedCocaFrequency)
-                      : 'Not in COCA Top 5K'}
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -484,12 +420,26 @@ function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
   );
 }
 
-function SummaryCard({ label, value }: { label: string; value: string }) {
+function WritingAdvicePanel({ advice }: { advice: WritingAdvice }) {
   return (
-    <article className="summary-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </article>
+    <section className="writing-advice" aria-labelledby="writing-advice-title">
+      <h2 id="writing-advice-title">Writing advice / 写作建议</h2>
+      <p>基于最近 {advice.essayCount} 篇已保存作文。建议先查看原句，再决定如何拓展表达。</p>
+      {advice.focuses.length > 0 ? (
+        <div className="advice-list">
+          {advice.focuses.map((focus) => (
+            <article className="advice-card" key={focus.lemma}>
+              <h3>{focus.lemma} {focus.meetsCandidateRule ? '· 重复表达候选' : '· 值得继续观察'}</h3>
+              <p>出现于 {focus.essayCount}/3 篇，共 {focus.totalCount} 次；{focus.occurrences.map(({ title, count }) => `${title} ${count} 次`).join('、')}。</p>
+              <p>{focus.practice}</p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p>这三篇中，示例形容词组尚未出现明显重复。下一篇可以选一处评价性表达，写出更具体的含义，再检查用词是否准确。</p>
+      )}
+      <p className="advice-caveat">重复次数是核查线索，不代表词语使用错误；当前工具无法判断每次用词的词性或语境，也不把换成低频词当作进步。请只比较同类写作任务。</p>
+    </section>
   );
 }
 
@@ -497,15 +447,6 @@ function getTodayDate(): string {
   const now = new Date();
   const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
   return localDate.toISOString().slice(0, 10);
-}
-
-function getEssaySignature(input: CreateEssayInput): string {
-  return JSON.stringify([
-    input.title.trim(),
-    input.writtenAt.trim(),
-    input.taskPrompt?.trim() || '',
-    input.text,
-  ]);
 }
 
 export default App;
