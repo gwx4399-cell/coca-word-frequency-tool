@@ -1,92 +1,81 @@
-# DEEA — COCA Word-Frequency Comparison Tool
+# DEEA｜跨篇英语写作词汇观察原型
 
-DEEA is a browser-based prototype for comparing repeated lemmas in English text with the COCA Top 5K frequency list.
+> 一篇作文能告诉我们某个词出现了几次；多篇作文才能让教师和学习者看到它是否反复出现在不同写作任务中。DEEA 把单篇分析、作文历史与跨篇证据连在一起，帮助用户决定**哪些表达值得回到原句核查**。
 
-DEEA 是一个浏览器端原型工具，用于将英文文本中的重复词与 COCA Top 5K 高频词表进行对照。
+**当前状态：v0.3 原型。**DEEA 在界面中展开为 Academic English Evolution Agent。工具在浏览器本地运行，使用 COCA 衍生的高频词表辅助词形归并；写作提示由明确的规则和少量人工词表生成。名称中的 Agent 是产品命名，**当前没有接入 AI 模型，不提供自动评分或语义诊断**。
 
-Product decisions, versioned PRDs, technical design (Chinese and English), and validation evidence: [docs/README.md](./docs/README.md).
+面向场景：同一写作者的多篇英语议论文，例如 IELTS Task 2；英语教师或学习者可以查看重复用词的逐篇证据，再结合题目和语境讨论下一步练习。
 
-Try the five [original IELTS Task 2 sample essays](./data/demo/IELTS_TASK2_FIVE_ESSAYS.md) in the New essay form to reproduce cross-essay results. See the [v0.3 product wireframe and design notes](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_CN.md) for the current three-tab flow. The samples are fictional test data, not assessed model answers; they are not added to your browser unless you enter and save them.
+![DEEA v0.3 三个视图的产品结构草图](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN.svg)
 
-## What It Does
+*这是产品结构图，不是实际页面截图。[设计说明：中文](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_CN.md) · [English](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_EN.md)。*
 
-- Enter an essay title, writing date, optional task/prompt, and original essay text.
-- Analyze the text locally in the browser.
-- Analyze and automatically save the essay metadata and original text to this browser. A different essay must have a unique title (case-insensitive); re-analyzing identical content is safe.
-- Open History to list saved essays, inspect the original text, and recompute analysis with the current analyzer.
-- Open Across essays to aggregate lemmas from every saved essay. The repeated-word list shows words used in at least two essays and at least three times in total; expand a row to see per-essay counts and reopen its source.
-- Inspect a limited importance-word pilot that compares observed uses of `important`, `significant`, `essential`, and `crucial` within those four words only. This is not a contextual semantic analysis or a writing score.
-- Once three essays have been saved, review a local writing-advice panel based on the latest three essays. It highlights repeated examples from a small curated adjective list and offers context-sensitive practice prompts. If the sample has no qualifying repeat, it offers a cautious next-step prompt.
-- Records persist across page refreshes in this browser.
-- Delete a saved essay only after confirming in an in-page dialog.
+## 当前可以体验什么
 
-Workflow: fill essay details -> analyze and save locally -> compare all saved essays in Across essays -> view writing advice after three saved essays -> reopen originals from History.
+| 视图 / 能力 | 已实现的用户行为 | 解释边界 |
+| --- | --- | --- |
+| **New essay / 单篇分析** | 输入标题、写作日期、可选题目与正文；点击 Analyze and save 后立即分析并保存。显示总词数，以及本篇出现至少 **3 次**的词、observed forms 与次数。 | 出现 1–2 次的词只从单篇表格隐藏，底层分析仍保留。标题在同一浏览器内须唯一；重复分析相同作文不会再保存一份。 |
+| **History / 作文历史** | 按日期打开已保存作文，查看原文、题目和重新计算的分析结果；删除前会要求确认。 | 当前只在浏览器本地保存，无账号或跨设备同步。 |
+| **Across essays / 跨篇复现** | 汇总当前浏览器中**全部**已保存作文。列表显示至少出现于 **2 篇**且累计至少 **3 次**的 lemma，可展开查看每篇次数、词形和原文入口。 | 单篇 1–2 次的记录仍进入跨篇累计；尚无作者或文体筛选。 |
+| **写作建议** | 保存至少 **3 篇**后，依据**最近 3 篇**生成有限的练习提示；无合格词时给一般练习方向。 | 只覆盖预设的少量形容词；次数是复核线索，不等于用词错误。 |
+| **“重要性”四词试验** | 比较 important、significant、essential、crucial 的观测词次；仅在总数至少 **3 次**且涉及至少 **2 篇**时显示组内占比。 | 分母只含这四个词的出现次数，无法统计所有表达“重要性”的机会，不能诊断“意群依赖”。 |
 
-## Key Outputs
+COCA 的派生 rank、词频以及覆盖率仍可供程序内部查询，**不作为写作质量分数展示**。每百词频率也没有作为界面指标。
 
-- Total words
-- Lemma rows with observed forms and count in this essay, shown only when the word appears at least three times here; hidden one- and two-use words still contribute to cross-essay counts
-- Cross-essay repeated words, essay-by-essay evidence, and one four-word pilot share with its denominator explained
-- Writing advice after three saved essays, including per-essay evidence and optional expression choices to verify in context
+## 用五篇作文复现跨篇统计
 
-The analyzer still uses the COCA-derived list internally for lookups. Coverage, per-100-word rate, derived rank, and aggregated frequency are not shown as writing-quality indicators.
+仓库提供 [五篇原创 IELTS Task 2 测试作文（阅读版）](./data/demo/IELTS_TASK2_FIVE_ESSAYS.md)和 [JSON 数据](./data/demo/IELTS_TASK2_FIVE_ESSAYS.json)。五篇均超过 250 词，假设由同一写作者完成，便于测试同类议论文；它们是虚构样本，**不是经评分的雅思范文**。
 
-## Stack
+1. 在 New essay 中按阅读版的标题、日期、题目和正文依次录入五篇，每篇点击 **Analyze and save**。样本不会自动写入你的历史。
+2. 保存第三篇后查看 Writing advice：它只使用最近三篇。进入 Across essays 查看累计结果：这里使用全部已保存作文。
+3. 展开 `significant`：这五篇中它每篇只出现 **1 次**，所以单篇词表隐藏，跨篇则显示 **5/5 篇、累计 5 次**。
+4. 查看四词试验组：如果浏览器历史**只有这五篇**，`important` 为 **13/25 = 52.0%**。再从词条证据打开原文，核查不同题目是否自然诱发重复。
 
-- Vite
-- React
-- TypeScript
+现有历史会参与“全部作文”的计算。想复现上面的精确数字，请使用空白的浏览器资料或浏览器无痕窗口，避免覆盖或混入你已有的作文。
 
-## Privacy
+## 在本地运行
 
-Essay history is stored only in this browser's `localStorage`. Text analysis and storage both run locally. Essays are not uploaded to a server. Clearing browser data permanently deletes saved essay history. There is no backend, login, account system, or server-side text submission in this prototype.
+推荐使用仓库持续集成配置中的 **Node.js 22** 和 npm。Windows PowerShell 示例：
 
-## Known Limitations
-
-- Lightweight deterministic lemmatization only. Without contextual part-of-speech tagging, ambiguous common inflections
-  such as `used` and `running` use fixed mappings to their base lemmas; unsupported forms fall back to the original token.
-- Limited tokenizer.
-- Uses a Top 5K COCA-derived frequency list rather than the full COCA corpus.
-- Writing advice uses a small, manually curated adjective list. It does not tag part of speech in context, prove semantic dependency, score writing, or automatically replace words. Compare essays from the same genre; differences in writing prompts can change word-use opportunities.
-- A repeated-expression candidate must occur at least three times in one of the latest three essays and appear in at least two of those essays. A weaker recurrence is labeled as an observation, not a dependency.
-- Cross-essay counts include all essays stored in this browser, regardless of author, genre or prompt. There is no author or genre filter yet. The importance pilot counts only four fixed words, including uses with different meanings or parts of speech; its denominator is not all opportunities to express importance.
-- A weaker recurrence appears as an individual advice observation only when it spans at least two of the latest three essays and totals at least three uses.
-
-## Local Run
-
-```bash
+```powershell
+git clone https://github.com/gwx4399-cell/coca-word-frequency-tool.git
+cd coca-word-frequency-tool
 npm ci
 npm run dev
-npm run build
-npm run preview
 ```
 
-## GitHub Pages
+打开终端显示的本地网址。若 GitHub 连接中断，也可以从仓库的 **Code → Download ZIP** 下载并解压，然后在解压后的项目目录运行 `npm ci` 和 `npm run dev`；执行 npm 命令前应能看到该目录中的 `package.json`。
 
-Expected public URL:
-
-```text
-https://gwx4399-cell.github.io/coca-word-frequency-tool/
+```bash
+npm test           # 运行自动测试
+npx tsc --noEmit   # TypeScript 类型检查
+npm run build      # 生产构建
+npm run preview    # 本地预览构建结果
 ```
 
-## COCA Attribution and Data Note
+作文保存在当前访问地址的浏览器 `localStorage` 中：刷新页面仍在；清除站点数据会丢失；`localhost` 与其他访问地址的数据互不相通。分析与保存都在浏览器内完成，正文不会因使用本工具上传到服务器。
 
-Word frequency data from the Corpus of Contemporary American English (COCA).
+## 项目如何验证、如何继续
 
-Source text: wordfrequency.info
+- **可复现验证**：35 个自动测试覆盖文本分析、保存/删除、跨篇汇总、低次数显示规则、四词分母、原文链接，以及五篇样本的预期计数；另运行 TypeScript 检查与生产构建。软件测试证明规则按预期执行，**尚未证明教学效果**。
+- **当前限制**：词形还原与分词是轻量确定性规则；没有上下文词性/词义识别。所有历史作文被一起统计，写作者、文体和题目差异需人工核查。COCA 数据为 Top-frequency 衍生词表，不是完整语料库。
+- **后续设计，尚未实现**：同文体比较范围、人工核查的语义机会、可持续的词汇目标、目标后 +1/+3/+5 篇观察、AWL/UWL 与 AI 生成建议。早期 Growth 首页与目标详情属于[页面架构提案](./docs/DEEA_PAGE_ARCHITECTURE_CN.md)，不是现有页面。
 
-The included dataset is a Top-frequency list derived from COCA frequency data. It is not the full COCA corpus. See `NOTICE.md` and `data/README_COCA_top5050.txt` before redistributing or reusing the dataset.
+### 作品集证据索引
 
-The source CSV includes multiple rows for a lemma when it occurs with different parts of speech. The internal lookup
-aggregates these rows and computes a derived lemma rank. That rank is **not displayed as a writing-quality metric**.
+| 想看什么 | 对应材料 |
+| --- | --- |
+| 产品问题、验收标准、已实现与未实现的边界 | [v0.3 PRD 中文](./docs/iterations/v0.3/DEEA_PRD_CN.md) / [English](./docs/iterations/v0.3/DEEA_PRD_EN.md) |
+| 数据流、规则、失败回退与测试方法 | [v0.3 技术设计中文](./docs/iterations/v0.3/DEEA_TECHNICAL_DESIGN_CN.md) / [English](./docs/iterations/v0.3/DEEA_TECHNICAL_DESIGN_EN.md) |
+| 页面关系与原型工具取舍 | [产品设计图和中文说明](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_CN.md) / [English](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_EN.md) |
+| 实际代码与可核对的变更 | [跨篇功能 PR #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6) / [五篇样本与设计图 PR #7](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/7) / [完整版本文档索引](./docs/README.md) |
 
-## Scope
+## 数据来源与许可
 
-This is a local word-frequency prototype with basic writing prompts, not an AI grading product.
+**Word frequency data from the Corpus of Contemporary American English (COCA).** Source text: wordfrequency.info.
 
-Not implemented in this version:
+仓库附带的是 COCA 衍生的 Top-frequency 数据，不是完整 COCA。项目代码的 MIT 许可**不等于**该词频数据也按 MIT 授权；转载或复用数据前请阅读 [NOTICE](./NOTICE.md)和[数据说明](./data/README_COCA_top5050.txt)，并核对数据提供方的现行条款。
 
-- Genre-controlled trends, contextual semantic-group classification and opportunity-based concentration
-- Persistent issue identification
-- AI-generated suggestions
-- Accounts, a backend, or cross-device sync
+## English overview
+
+DEEA is a browser-based, rule-driven prototype for reviewing word-choice patterns across essays by the same writer. It saves essays locally, shows repeated lemmas with per-essay evidence, and offers limited practice prompts after three essays. The four-word importance pilot reports only the share of observed uses within its configured word set; it is not a semantic-dependency measure, an IELTS score, or AI-generated feedback. Five original, unscored IELTS Task 2 samples and a product wireframe make the demo reproducible. Read the [English PRD](./docs/iterations/v0.3/DEEA_PRD_EN.md), [technical design](./docs/iterations/v0.3/DEEA_TECHNICAL_DESIGN_EN.md), and [design notes](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_EN.md) for decisions and limitations.

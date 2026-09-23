@@ -1,6 +1,6 @@
 # DEEA v0.3 Product Design Notes
 
-**Status:** A drawing of screens already merged through [feature PR #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6). The drawing itself is proposed in [follow-up PR #7](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/7), pending review; no public deployment claim. **Date:** 2026-09-23.
+**Status:** A drawing of screens merged through [feature PR #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6). The drawing itself was merged through [follow-up PR #7](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/7); public deployment status unverified. **Date:** 2026-09-23.
 
 ![Wireframe of the DEEA v0.3 screens](./DEEA_PRODUCT_DESIGN.svg)
 
