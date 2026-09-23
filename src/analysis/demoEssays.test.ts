@@ -38,6 +38,9 @@ describe('five original IELTS Task 2 demonstration essays', () => {
         { title: '[Demo] 01 Public Transport', count: 1 },
       ],
     });
+    const significant = across.repeatedWords.find((word) => word.lemma === 'significant');
+    expect(significant?.occurrences.every((item) => item.sentences.flatMap((sentence) => sentence.matches).length === item.count)).toBe(true);
+    expect(significant?.occurrences.every((item) => item.sentences.some((sentence) => sentence.text.includes('significant')))).toBe(true);
     expect(across.words.find((word) => word.lemma === 'crucial')).toMatchObject({ totalCount: 2, essayCount: 2 });
     expect(across.repeatedWords.some((word) => word.lemma === 'crucial')).toBe(false);
     expect(across.pilotGroup.members.map((member) => member.count)).toEqual([13, 5, 5, 2]);

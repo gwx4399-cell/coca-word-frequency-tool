@@ -48,8 +48,19 @@ describe('cross-essay view', () => {
     const evidence = rows.find((row) => row.querySelector('th')?.textContent === 'important');
     const details = evidence?.querySelector('details');
     expect(details?.textContent).toContain('Essay 3');
+    const source = Array.from(details?.querySelectorAll('.occurrence-list > li') ?? []).find((item) => item.textContent?.includes('Essay 3'));
+    expect(source?.querySelector('blockquote')?.textContent).toContain('Important issues are important; crucial issues matter.');
+    expect(Array.from(source?.querySelectorAll('mark') ?? []).map((mark) => mark.textContent)).toEqual(['Important', 'important']);
     const link = Array.from(details?.querySelectorAll('button') ?? []).find((button) => button.textContent === 'Essay 3');
     act(() => link?.click());
     expect(document.querySelector('.history-detail')?.textContent).toContain('Essay 3');
+    expect(Array.from(document.querySelectorAll('.history-detail pre mark')).map((mark) => mark.textContent)).toEqual(['Important', 'important']);
+    expect(document.querySelector('.history-detail pre')?.textContent).toBe('Important issues are important; crucial issues matter.');
+
+    const back = Array.from(document.querySelectorAll('button')).find((button) => button.textContent?.trim() === 'Back to history');
+    act(() => back?.click());
+    const other = Array.from(document.querySelectorAll('.history-open')).find((button) => button.textContent?.includes('Essay 2')) as HTMLButtonElement | undefined;
+    act(() => other?.click());
+    expect(document.querySelectorAll('.history-detail pre mark')).toHaveLength(0);
   });
 });

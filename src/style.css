@@ -266,7 +266,7 @@ h1 {
 }
 
 .across-essays .frequency-table {
-  min-width: 650px;
+  min-width: 760px;
 }
 
 .occurrence-list,
@@ -282,6 +282,39 @@ h1 {
 
 .occurrence-list .text-button {
   padding: 0;
+}
+
+.source-sentences {
+  margin: 8px 0 14px;
+  padding-left: 24px;
+  color: #475569;
+}
+
+.source-sentences li + li {
+  margin-top: 8px;
+}
+
+.source-sentences blockquote {
+  margin: 4px 0 0;
+  padding: 8px 12px;
+  border-left: 3px solid #93c5fd;
+  border-radius: 4px;
+  background: #f8fafc;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.source-match {
+  border-radius: 3px;
+  padding: 0 2px;
+  background: #fde68a;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.context-note {
+  color: #475569;
+  line-height: 1.6;
 }
 
 .pilot-group {

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">DEEA v0.4 source sentence evidence flow</title>
+  <desc id="desc">A cross-essay word opens per-essay original sentences with highlighted forms, then the History page highlights the word in the full original essay.</desc>
+  <defs>
+    <style>
+      text { font-family: Inter, Arial, sans-serif; fill: #163249; }
+      .heading { font-size: 27px; font-weight: 700; }
+      .panel-title { font-size: 19px; font-weight: 700; }
+      .body { font-size: 14px; }
+      .small { font-size: 12px; fill: #50677a; }
+      .label { font-size: 11px; letter-spacing: 1px; font-weight: 700; fill: #267b87; }
+      .card { fill: #fff; stroke: #cbdbe4; stroke-width: 1.5; }
+      .quote { fill: #f4f9fb; stroke: #cfdee4; }
+      .mark { fill: #fde68a; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#268595"/></marker>
+  </defs>
+  <rect width="1280" height="720" fill="#eef5f8"/>
+  <text x="40" y="56" class="heading">DEEA v0.4 / review a repeated word in context</text>
+  <text x="40" y="82" class="small">Static wireframe · sample values from five fictional IELTS Task 2 essays · sentence boundaries are approximate</text>
+
+  <rect x="40" y="117" width="258" height="469" rx="15" class="card"/>
+  <text x="58" y="148" class="label">1 · FIND THE WORD</text>
+  <text x="58" y="182" class="panel-title">Across essays</text>
+  <text x="58" y="216" class="small">All five saved essays</text>
+  <rect x="58" y="244" width="222" height="104" rx="9" class="quote"/>
+  <text x="72" y="273" class="body">significant</text>
+  <text x="72" y="303" class="small">5/5 essays · 5 total uses</text>
+  <text x="72" y="330" class="small">Expand original sentences</text>
+  <text x="58" y="387" class="body">Once in each essay:</text>
+  <text x="58" y="416" class="small">hidden in each single-essay</text>
+  <text x="58" y="436" class="small">table, counted across essays</text>
+  <text x="58" y="542" class="small">Counts are a review cue.</text>
+
+  <path d="M309 342 H338" fill="none" stroke="#268595" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="349" y="117" width="494" height="469" rx="15" class="card"/>
+  <text x="368" y="148" class="label">2 · READ THE ORIGINAL SENTENCES</text>
+  <text x="368" y="182" class="panel-title">Evidence by essay</text>
+  <text x="368" y="216" class="small">[Demo] 01 Public Transport · 2026-09-01 · 1 use</text>
+  <rect x="368" y="237" width="456" height="83" rx="9" class="quote"/>
+  <text x="382" y="268" class="body">A</text>
+  <rect x="398" y="251" width="73" height="22" rx="3" class="mark"/>
+  <text x="399" y="268" class="body">significant</text>
+  <text x="477" y="268" class="body">share of an existing network may</text>
+  <text x="382" y="295" class="body">also require repairs.</text>
+  <text x="368" y="354" class="small">[Demo] 02 Digital Classrooms · 2026-09-03 · 1 use</text>
+  <rect x="368" y="374" width="456" height="105" rx="9" class="quote"/>
+  <text x="382" y="404" class="body">A</text>
+  <rect x="398" y="386" width="73" height="22" rx="3" class="mark"/>
+  <text x="399" y="404" class="body">significant</text>
+  <text x="477" y="404" class="body">benefit of this balanced</text>
+  <text x="382" y="431" class="body">approach is that it treats technology as a</text>
+  <text x="382" y="457" class="body">tool rather than a measure of progress.</text>
+  <text x="368" y="518" class="small">Every matching sentence keeps its original case and punctuation.</text>
+  <text x="368" y="543" class="small">Select a title to check the complete essay and task.</text>
+
+  <path d="M852 342 H881" fill="none" stroke="#268595" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="892" y="117" width="349" height="469" rx="15" class="card"/>
+  <text x="911" y="148" class="label">3 · VERIFY THE FULL TEXT</text>
+  <text x="911" y="182" class="panel-title">History / original essay</text>
+  <text x="911" y="216" class="small">Title · date · writing prompt · full text</text>
+  <rect x="911" y="237" width="311" height="250" rx="9" class="quote"/>
+  <text x="926" y="268" class="small">... roads are still needed for</text>
+  <text x="926" y="293" class="small">deliveries and rural travel.</text>
+  <text x="926" y="333" class="body">A</text>
+  <rect x="943" y="315" width="73" height="22" rx="3" class="mark"/>
+  <text x="944" y="333" class="body">significant</text>
+  <text x="1022" y="333" class="body">share of</text>
+  <text x="926" y="361" class="body">an existing network may</text>
+  <text x="926" y="389" class="body">also require repairs.</text>
+  <text x="926" y="447" class="small">... full essay continues ...</text>
+  <text x="911" y="539" class="small">Normal History navigation clears the highlight.</text>
+
+  <path d="M40 627 H1241" stroke="#cbdbe4"/>
+  <text x="40" y="654" class="small">Whole-token lemma matches are highlighted. A highlighted sentence is not an error verdict or a recommendation to substitute a word.</text>
+</svg>
