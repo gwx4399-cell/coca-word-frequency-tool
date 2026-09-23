@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import cocaCsv from '../data/COCA_WordFrequency_top5000.csv?raw';
 import { analyzeEssay } from './analysis/analyzeEssay';
 import { analyzeAcrossEssays, type AcrossEssayAnalysis } from './analysis/acrossEssays';
+import { findLemmaMatches, type TextMatch } from './analysis/evidence';
 import { parseCocaCsv, type CocaLemmaMap } from './analysis/coca';
 import { getWritingAdvice, type WritingAdvice } from './analysis/writingAdvice';
 import {
@@ -37,6 +38,7 @@ function App() {
   const writingAdvice = useMemo(() => getWritingAdvice(essays, cocaEntries), [essays, cocaEntries]);
   const acrossEssays = useMemo(() => analyzeAcrossEssays(essays, cocaEntries), [essays, cocaEntries]);
   const [selectedEssayId, setSelectedEssayId] = useState<string | null>(null);
+  const [sourceLemma, setSourceLemma] = useState<string | null>(null);
   const [essayPendingDeletion, setEssayPendingDeletion] = useState<EssayRecord | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -227,14 +229,19 @@ function App() {
             essays={essays}
             selectedEssayId={selectedEssayId}
             cocaEntries={cocaEntries}
-            onOpen={setSelectedEssayId}
+            highlightLemma={sourceLemma}
+            onOpen={(id) => {
+              setSelectedEssayId(id);
+              setSourceLemma(null);
+            }}
             onDelete={requestDelete}
           />
         ) : (
           <AcrossEssaysView
             analysis={acrossEssays}
-            onOpenEssay={(id) => {
+            onOpenEssay={(id, lemma) => {
               setSelectedEssayId(id);
+              setSourceLemma(lemma);
               setActiveView('history');
             }}
           />
@@ -329,12 +336,14 @@ function HistoryView({
   essays,
   selectedEssayId,
   cocaEntries,
+  highlightLemma,
   onOpen,
   onDelete,
 }: {
   essays: EssayRecord[];
   selectedEssayId: string | null;
   cocaEntries: CocaLemmaMap;
+  highlightLemma: string | null;
   onOpen: (id: string | null) => void;
   onDelete: (essay: EssayRecord) => void;
 }) {
@@ -374,7 +383,10 @@ function HistoryView({
           )}
           <div className="essay-evidence">
             <strong>Original essay</strong>
-            <pre>{selected.essay.text}</pre>
+            {highlightLemma && <p className="context-note">来自跨篇统计：已高亮 <strong>{highlightLemma}</strong> 的匹配词形，请结合完整段落核查语境。</p>}
+            <pre>{highlightLemma ? (
+              <HighlightedText text={selected.essay.text} matches={findLemmaMatches(selected.essay.text, highlightLemma, cocaEntries)} />
+            ) : selected.essay.text}</pre>
           </div>
           <AnalysisResults analysis={selected.analysis} />
         </article>
@@ -444,7 +456,7 @@ function AcrossEssaysView({
   onOpenEssay,
 }: {
   analysis: AcrossEssayAnalysis;
-  onOpenEssay: (id: string) => void;
+  onOpenEssay: (id: string, lemma: string) => void;
 }) {
   const group = analysis.pilotGroup;
   return (
@@ -466,12 +478,19 @@ function AcrossEssaysView({
                   <td>{word.totalCount}</td>
                   <td>
                     <details>
-                      <summary>View essay counts</summary>
+                      <summary>查看逐篇原句与高亮</summary>
                       <ul className="occurrence-list">
                         {word.occurrences.map((item) => (
                           <li key={item.essayId}>
-                            <button className="text-button" type="button" onClick={() => onOpenEssay(item.essayId)}>{item.title}</button>
+                            <button className="text-button" type="button" onClick={() => onOpenEssay(item.essayId, word.lemma)}>{item.title}</button>
                             <span> · {item.writtenAt} · {item.count} 次 · {item.observedForms.join(', ')}</span>
+                            <ol className="source-sentences" aria-label={`${item.title} 中 ${word.lemma} 的原句`}>
+                              {item.sentences.map((sentence) => (
+                                <li key={sentence.start}>
+                                  <blockquote><HighlightedText text={sentence.text} matches={sentence.matches} /></blockquote>
+                                </li>
+                              ))}
+                            </ol>
                           </li>
                         ))}
                       </ul>
@@ -505,6 +524,20 @@ function AcrossEssaysView({
       <p className="advice-caveat">此处占比的分母仅是 important、significant、essential、crucial 的实际出现次数，不是文章中所有表达“重要性”的机会。程序不能识别上下文词性或语义；这个试验结果不是“意群依赖”的诊断。</p>
     </section>
   );
+}
+
+function HighlightedText({ text, matches }: { text: string; matches: TextMatch[] }) {
+  const pieces: React.ReactNode[] = [];
+  let cursor = 0;
+
+  for (const match of matches) {
+    pieces.push(text.slice(cursor, match.start));
+    pieces.push(<mark className="source-match" key={match.start}>{text.slice(match.start, match.end)}</mark>);
+    cursor = match.end;
+  }
+  pieces.push(text.slice(cursor));
+
+  return <>{pieces}</>;
 }
 
 function WritingAdvicePanel({ advice }: { advice: WritingAdvice }) {
