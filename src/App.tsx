@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import cocaCsv from '../data/COCA_WordFrequency_top5000.csv?raw';
 import { analyzeEssay } from './analysis/analyzeEssay';
+import { analyzeAcrossEssays, type AcrossEssayAnalysis } from './analysis/acrossEssays';
 import { parseCocaCsv, type CocaLemmaMap } from './analysis/coca';
 import { getWritingAdvice, type WritingAdvice } from './analysis/writingAdvice';
 import {
@@ -16,7 +17,7 @@ const formatNumber = new Intl.NumberFormat('en-US');
 
 const COCA_ENTRIES = parseCocaCsv(cocaCsv);
 
-type AppView = 'new' | 'history';
+type AppView = 'new' | 'history' | 'progress';
 type Feedback = { kind: 'success' | 'error'; message: string };
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [essays, setEssays] = useState<EssayRecord[]>(() => repository.listEssays());
   const writingAdvice = useMemo(() => getWritingAdvice(essays, cocaEntries), [essays, cocaEntries]);
+  const acrossEssays = useMemo(() => analyzeAcrossEssays(essays, cocaEntries), [essays, cocaEntries]);
   const [selectedEssayId, setSelectedEssayId] = useState<string | null>(null);
   const [essayPendingDeletion, setEssayPendingDeletion] = useState<EssayRecord | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -134,6 +136,14 @@ function App() {
           >
             History ({essays.length})
           </button>
+          <button
+            className={activeView === 'progress' ? 'view-tab active' : 'view-tab'}
+            type="button"
+            aria-pressed={activeView === 'progress'}
+            onClick={() => setActiveView('progress')}
+          >
+            Across essays
+          </button>
         </nav>
 
         {writingAdvice && <WritingAdvicePanel advice={writingAdvice} />}
@@ -212,13 +222,21 @@ function App() {
 
             {analysis && <AnalysisResults analysis={analysis} />}
           </section>
-        ) : (
+        ) : activeView === 'history' ? (
           <HistoryView
             essays={essays}
             selectedEssayId={selectedEssayId}
             cocaEntries={cocaEntries}
             onOpen={setSelectedEssayId}
             onDelete={requestDelete}
+          />
+        ) : (
+          <AcrossEssaysView
+            analysis={acrossEssays}
+            onOpenEssay={(id) => {
+              setSelectedEssayId(id);
+              setActiveView('history');
+            }}
           />
         )}
         {essayPendingDeletion && (
@@ -380,19 +398,20 @@ function HistoryView({
           ))}
         </div>
       ) : (
-        <p className="empty-state">No saved essays yet. Analyze an essay, then choose Save to history.</p>
+        <p className="empty-state">No saved essays yet. Analyze and save an essay to begin.</p>
       )}
     </section>
   );
 }
 
 function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
+  const visibleLemmas = analysis.lemmas.filter((row) => row.count >= 3);
   return (
     <section className="results" aria-live="polite" aria-label="Essay analysis results">
       <h2>Essay Analysis</h2>
       <p className="word-count">{formatNumber.format(analysis.totalWordCount)} total words</p>
 
-      {analysis.lemmas.length > 0 ? (
+      {visibleLemmas.length > 0 ? (
         <div className="frequency-table-wrapper">
           <table className="frequency-table">
             <thead>
@@ -403,7 +422,7 @@ function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
               </tr>
             </thead>
             <tbody>
-              {analysis.lemmas.map((lemmaResult) => (
+              {visibleLemmas.map((lemmaResult) => (
                 <tr key={lemmaResult.lemma}>
                   <th scope="row">{lemmaResult.lemma}</th>
                   <td>{lemmaResult.observedForms.join(', ')}</td>
@@ -414,8 +433,76 @@ function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
           </table>
         </div>
       ) : (
-        <p className="empty-state">No countable words found after removing common function words.</p>
+        <p className="empty-state">No word appears three or more times in this essay. All counts still contribute to cross-essay analysis.</p>
       )}
+    </section>
+  );
+}
+
+function AcrossEssaysView({
+  analysis,
+  onOpenEssay,
+}: {
+  analysis: AcrossEssayAnalysis;
+  onOpenEssay: (id: string) => void;
+}) {
+  const group = analysis.pilotGroup;
+  return (
+    <section className="workspace-section across-essays" aria-labelledby="across-title">
+      <h2 id="across-title">Across essays / 跨篇统计</h2>
+      <p>已保存 {analysis.essayCount} 篇作文。以下统计使用全部历史作文；请只把同一写作者的同类写作任务放在一起比较。</p>
+
+      <h3>Repeated words / 跨篇复现</h3>
+      <p>词语至少出现在 2 篇、累计至少 3 次才显示；单篇只出现 1–2 次的记录仍计入累计次数。</p>
+      {analysis.repeatedWords.length ? (
+        <div className="frequency-table-wrapper">
+          <table className="frequency-table">
+            <thead><tr><th scope="col">Lemma</th><th scope="col">Essays</th><th scope="col">Total uses</th><th scope="col">Evidence</th></tr></thead>
+            <tbody>
+              {analysis.repeatedWords.map((word) => (
+                <tr key={word.lemma}>
+                  <th scope="row">{word.lemma}</th>
+                  <td>{word.essayCount}/{analysis.essayCount}</td>
+                  <td>{word.totalCount}</td>
+                  <td>
+                    <details>
+                      <summary>View essay counts</summary>
+                      <ul className="occurrence-list">
+                        {word.occurrences.map((item) => (
+                          <li key={item.essayId}>
+                            <button className="text-button" type="button" onClick={() => onOpenEssay(item.essayId)}>{item.title}</button>
+                            <span> · {item.writtenAt} · {item.count} 次 · {item.observedForms.join(', ')}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="empty-state">还没有同时满足“至少两篇、累计三次”的词。继续保存同类作文后再查看。</p>
+      )}
+
+      <h3>{group.label}</h3>
+      {!group.enoughForDisplay ? (
+        <p className="empty-state">这个试验词组目前不足 3 次或不足 2 篇，暂不显示占比。</p>
+      ) : (
+        <div className="pilot-group">
+          <p>在 {group.essayCount} 篇中，这四个预设词共出现 {group.totalCount} 次；其中 <strong>{group.leadingMember?.lemma}</strong> 占 {group.leadingMember?.sharePct.toFixed(1)}%。{group.leadingMember && group.leadingMember.sharePct > 50 ? '超过这个限定词组观测次数的一半，值得核查原句。' : ''}</p>
+          <details>
+            <summary>查看组内词数（包括 1–2 次的词）</summary>
+            <ul className="group-members">
+              {group.members.filter((member) => member.count > 0).map((member) => (
+                <li key={member.lemma}>{member.lemma}: {member.count} 次，{member.sharePct.toFixed(1)}%</li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      )}
+      <p className="advice-caveat">此处占比的分母仅是 important、significant、essential、crucial 的实际出现次数，不是文章中所有表达“重要性”的机会。程序不能识别上下文词性或语义；这个试验结果不是“意群依赖”的诊断。</p>
     </section>
   );
 }
