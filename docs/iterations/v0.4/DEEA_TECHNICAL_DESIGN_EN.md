@@ -1,6 +1,6 @@
 # DEEA v0.4 Technical Design
 
-**Status:** Implemented on `feature/original-sentence-evidence-v0-4`, pending merge. **Date:** 2026-09-23. **Pull request:** Link after creation. No storage migration, external service or AI model.
+**Status:** Implemented on `feature/original-sentence-evidence-v0-4`, pending merge. **Date:** 2026-09-23. **Pull request:** [Original sentence evidence #9](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/9). No storage migration, external service or AI model.
 
 ## Data flow and types
 
