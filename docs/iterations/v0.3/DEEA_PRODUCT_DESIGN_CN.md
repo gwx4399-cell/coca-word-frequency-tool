@@ -1,6 +1,6 @@
 # DEEA v0.3 产品设计图说明（中文）
 
-**状态**：记录已由[功能 PR #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6) 合并的页面关系；本设计图在后续分支待评审，未宣称公开部署。**日期**：2026-09-23。
+**状态**：记录已由[功能 PR #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6) 合并的页面关系；本设计图由[补充 PR #7](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/7) 提交，待评审，未宣称公开部署。**日期**：2026-09-23。
 
 ![DEEA v0.3 的页面结构草图](./DEEA_PRODUCT_DESIGN.svg)
 
