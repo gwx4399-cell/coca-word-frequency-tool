@@ -1,6 +1,6 @@
 # DEEA v0.4 产品需求文档（中文）
 
-**状态**：`feature/original-sentence-evidence-v0-4` 分支已实现，待评审与合并。**日期**：2026-09-23。**关联 PR**：创建后回填。
+**状态**：`feature/original-sentence-evidence-v0-4` 分支已实现，待评审与合并。**日期**：2026-09-23。**关联 PR**：[原句高亮 #9](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/9)。
 
 ## 用户问题与本轮目标
 
