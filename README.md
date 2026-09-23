@@ -6,6 +6,8 @@ DEEA 是一个浏览器端原型工具，用于将英文文本中的重复词与
 
 Product decisions, versioned PRDs, technical design (Chinese and English), and validation evidence: [docs/README.md](./docs/README.md).
 
+Try the five [original IELTS Task 2 sample essays](./data/demo/IELTS_TASK2_FIVE_ESSAYS.md) in the New essay form to reproduce cross-essay results. See the [v0.3 product wireframe and design notes](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_CN.md) for the current three-tab flow. The samples are fictional test data, not assessed model answers; they are not added to your browser unless you enter and save them.
+
 ## What It Does
 
 - Enter an essay title, writing date, optional task/prompt, and original essay text.
