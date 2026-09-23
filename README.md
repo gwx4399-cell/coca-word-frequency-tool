@@ -4,6 +4,8 @@ DEEA is a browser-based prototype for comparing repeated lemmas in English text 
 
 DEEA 是一个浏览器端原型工具，用于将英文文本中的重复词与 COCA Top 5K 高频词表进行对照。
 
+Product decisions, versioned PRDs, technical design (Chinese and English), and validation evidence: [docs/README.md](./docs/README.md).
+
 ## What It Does
 
 - Enter an essay title, writing date, optional task/prompt, and original essay text.
@@ -68,10 +70,8 @@ Source text: wordfrequency.info
 
 The included dataset is a Top-frequency list derived from COCA frequency data. It is not the full COCA corpus. See `NOTICE.md` and `data/README_COCA_top5050.txt` before redistributing or reusing the dataset.
 
-The source CSV includes multiple rows for the same lemma when that lemma appears with different parts of speech. DEEA
-aggregates those rows by lemma, keeps all listed parts of speech, sums `freq` and `perMil`, and then computes a derived
-lemma rank from the aggregated frequency. The displayed rank is therefore a derived lemma rank, not the original
-lemma+PoS rank from the CSV.
+The source CSV includes multiple rows for a lemma when it occurs with different parts of speech. The internal lookup
+aggregates these rows and computes a derived lemma rank. That rank is **not displayed as a writing-quality metric**.
 
 ## Scope
 
