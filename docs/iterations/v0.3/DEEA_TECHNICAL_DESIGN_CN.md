@@ -1,8 +1,9 @@
 # DEEA v0.3 技术设计（中文）
 
-**状态**：功能已随 PR #6 合并 `main`；五篇样本及验证附录在后续分支，待评审。**日期**：2026-09-23。  
+**状态**：功能已随 PR #6 合并 `main`；五篇样本及验证附录在 PR #7，待评审。**日期**：2026-09-23。  
 **约束**：Vite / React / TypeScript，原文仍在 `deea.essays.v1` 的浏览器 `localStorage`；无服务器、数据迁移或 AI API。
 **关联 PR**：[v0.3 跨篇统计与词组试验 #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6)。
+**样本与设计补充 PR**：[五篇 IELTS 作文与产品设计图 #7](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/7)。
 
 ## 1. 分析管线
 
