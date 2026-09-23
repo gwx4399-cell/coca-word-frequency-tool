@@ -61,7 +61,7 @@ export function getWritingAdvice(essays: EssayRecord[], cocaEntries: CocaLemmaMa
   });
 
   const candidates = focuses.filter((item) => item.meetsCandidateRule);
-  const shortlist = candidates.length ? candidates : focuses.filter((item) => item.essayCount >= 2);
+  const shortlist = candidates.length ? candidates : focuses.filter((item) => item.essayCount >= 2 && item.totalCount >= 3);
   shortlist.sort((a, b) => b.essayCount - a.essayCount || b.totalCount - a.totalCount || a.lemma.localeCompare(b.lemma));
 
   return { essayCount: recent.length, focuses: shortlist.slice(0, 3) };
