@@ -1,6 +1,6 @@
 # DEEA v0.4 技术设计（中文）
 
-**状态**：`feature/original-sentence-evidence-v0-4` 分支已实现，待合并。**日期**：2026-09-23。**关联 PR**：创建后回填。无存储迁移、无外部服务或 AI 模型。
+**状态**：`feature/original-sentence-evidence-v0-4` 分支已实现，待合并。**日期**：2026-09-23。**关联 PR**：[原句高亮 #9](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/9)。无存储迁移、无外部服务或 AI 模型。
 
 ## 数据流与契约
 
