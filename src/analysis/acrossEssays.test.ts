@@ -23,6 +23,8 @@ describe('cross-essay analysis', () => {
     ], coca);
 
     expect(result.repeatedWords.map((word) => word.lemma)).toEqual(['important', 'issue']);
+    expect(result.words.map((word) => word.lemma)).toEqual(['important', 'issue', 'crucial', 'essential', 'significant']);
+    expect(result.words.find((word) => word.lemma === 'essential')).toMatchObject({ totalCount: 1, essayCount: 1 });
     expect(result.repeatedWords[0]).toMatchObject({
       totalCount: 5,
       essayCount: 3,
@@ -43,6 +45,7 @@ describe('cross-essay analysis', () => {
     expect(withTwo.pilotGroup.enoughForDisplay).toBe(true);
 
     const afterDeletion = analyzeAcrossEssays([essay('1', 'important')], coca);
+    expect(afterDeletion.words[0]).toMatchObject({ lemma: 'important', totalCount: 1, essayCount: 1 });
     expect(afterDeletion.repeatedWords).toEqual([]);
     expect(afterDeletion.pilotGroup.enoughForDisplay).toBe(false);
 
