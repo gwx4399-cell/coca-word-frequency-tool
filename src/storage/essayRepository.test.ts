@@ -104,6 +104,17 @@ describe('EssayRepository', () => {
     expect(repeated).toEqual(first);
     expect(repository.listEssays()).toHaveLength(1);
   });
+
+  it('prevents different essays from sharing a title regardless of case or surrounding spaces', () => {
+    const repository = createRepository(new MemoryStorage());
+    repository.createEssay(validInput);
+
+    expectValidationError(
+      () => repository.createEssay({ ...validInput, title: ' MY FIRST ESSAY ', text: 'A new argument.' }),
+      'title',
+    );
+    expect(repository.listEssays()).toHaveLength(1);
+  });
 });
 
 function createRepository(storage: Storage): EssayRepository {
