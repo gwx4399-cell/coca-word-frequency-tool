@@ -8,6 +8,8 @@
 | v0.2：分析即保存 + 三篇建议 | [代码 PR #4](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/4) 与[文档 PR #5](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/5) 已合并 `main`；公开部署状态待核实 | [PRD 中文](./iterations/v0.2/DEEA_PRD_CN.md) · [PRD English](./iterations/v0.2/DEEA_PRD_EN.md) | [技术设计中文](./iterations/v0.2/DEEA_TECHNICAL_DESIGN_CN.md) · [Technical design English](./iterations/v0.2/DEEA_TECHNICAL_DESIGN_EN.md) · 30 个测试、类型检查、构建通过。 |
 | v0.3：跨篇汇总 + 四词意群试验 | [功能 PR #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6) 与[测试、设计 PR #7](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/7) 均已合并 `main`；公开部署状态待核实 | [PRD 中文](./iterations/v0.3/DEEA_PRD_CN.md) · [PRD English](./iterations/v0.3/DEEA_PRD_EN.md) · [产品设计图 / 说明中文](./iterations/v0.3/DEEA_PRODUCT_DESIGN_CN.md) · [Product design English](./iterations/v0.3/DEEA_PRODUCT_DESIGN_EN.md) | [技术设计中文](./iterations/v0.3/DEEA_TECHNICAL_DESIGN_CN.md) · [Technical design English](./iterations/v0.3/DEEA_TECHNICAL_DESIGN_EN.md) · [五篇原创 IELTS 作文](../data/demo/IELTS_TASK2_FIVE_ESSAYS.md) · 35 个测试、类型检查、构建通过。 |
 
+**首页文档更新**：[PR #8](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/8) 待评审；将[根目录 README](../README.md)改为当前产品与作品集总览，并校正本页及 v0.3 文档的合并状态。该 PR 不改变产品行为或测试规则，因此不另立功能版本。
+
 ## 阅读顺序
 
 1. 看相应版本的 **PRD**：用户问题、目标、范围、交互、验收和限制。
