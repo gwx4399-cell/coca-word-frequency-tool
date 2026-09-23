@@ -1,4 +1,5 @@
 import { analyzeEssay } from './analyzeEssay';
+import { indexSentenceEvidence, type SentenceEvidence } from './evidence';
 import type { CocaLemmaMap } from './coca';
 import type { EssayRecord } from '../types/essay';
 
@@ -8,6 +9,7 @@ export type EssayOccurrence = {
   writtenAt: string;
   count: number;
   observedForms: string[];
+  sentences: SentenceEvidence[];
 };
 
 export type CrossEssayWord = {
@@ -48,6 +50,7 @@ export function analyzeAcrossEssays(essays: EssayRecord[], cocaEntries: CocaLemm
   const byLemma = new Map<string, CrossEssayWord>();
 
   for (const essay of essays) {
+    const sentenceEvidence = indexSentenceEvidence(essay.text, cocaEntries);
     for (const row of analyzeEssay(essay.text, cocaEntries).lemmas) {
       let word = byLemma.get(row.lemma);
       if (!word) {
@@ -63,6 +66,7 @@ export function analyzeAcrossEssays(essays: EssayRecord[], cocaEntries: CocaLemm
         writtenAt: essay.writtenAt,
         count: row.count,
         observedForms: row.observedForms,
+        sentences: sentenceEvidence.get(row.lemma) ?? [],
       });
       for (const form of row.observedForms) {
         if (!word.observedForms.includes(form)) word.observedForms.push(form);
