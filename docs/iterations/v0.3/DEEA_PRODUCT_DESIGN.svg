@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 980" role="img" aria-labelledby="title description">
+  <title id="title">DEEA v0.3 product wireframe: New essay, Across essays, History</title>
+  <desc id="description">A static design drawing of the currently implemented three-tab demo with a five-essay example. It shows an essay form, cross-essay evidence and four-word pilot, and links back to original essays.</desc>
+  <defs>
+    <style>
+      text { font-family: Inter, "Noto Sans SC", "Microsoft YaHei", Arial, sans-serif; fill: #193247; }
+      .title { font-size: 29px; font-weight: 750; }
+      .panelTitle { font-size: 20px; font-weight: 700; }
+      .heading { font-size: 15px; font-weight: 700; }
+      .body { font-size: 14px; }
+      .small { font-size: 12px; }
+      .label { font-size: 11px; font-weight: 700; letter-spacing: 1px; fill: #377c8d; }
+      .muted { fill: #63788a; }
+      .white { fill: #fff; }
+      .panel { fill: #fff; stroke: #cfdee4; stroke-width: 1.5; }
+      .box { fill: #f5f9fb; stroke: #cfdee4; stroke-width: 1; }
+      .line { stroke: #e1eaf0; stroke-width: 1; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#2c8794"/></marker>
+  </defs>
+
+  <rect width="1440" height="980" fill="#edf4f7"/>
+  <text x="46" y="56" class="title">DEEA / v0.3 product wireframe</text>
+  <text x="46" y="84" class="body muted">Implemented screens · five original IELTS Task 2 examples · design drawing, not a screenshot</text>
+  <rect x="1153" y="35" width="239" height="32" rx="16" fill="#d7f1ec"/>
+  <text x="1173" y="56" class="small" fill="#14665d">Feature PR #6 merged</text>
+
+  <rect x="46" y="112" width="1348" height="66" rx="14" class="panel"/>
+  <text x="69" y="151" class="heading">DEEA</text>
+  <rect x="267" y="125" width="149" height="40" rx="8" fill="#e0f0f2"/>
+  <text x="290" y="151" class="body">New essay</text>
+  <text x="575" y="151" class="body">History (5)</text>
+  <text x="882" y="151" class="body">Across essays</text>
+  <text x="1202" y="151" class="small muted">Local browser</text>
+
+  <rect x="46" y="194" width="1348" height="61" rx="12" fill="#fef6e9" stroke="#e9d8ac"/>
+  <text x="68" y="218" class="heading">Writing advice</text>
+  <text x="68" y="240" class="small muted">Shown after three saved essays; uses the latest three, while the cross-essay view uses all saved essays.</text>
+
+  <rect x="46" y="276" width="405" height="579" rx="16" class="panel"/>
+  <text x="66" y="306" class="label">01 · INPUT + SAVE</text>
+  <text x="66" y="337" class="panelTitle">New essay</text>
+  <text x="66" y="362" class="small muted">Enter an essay, analyze, and save locally</text>
+  <text x="66" y="399" class="small">Title</text>
+  <rect x="66" y="409" width="365" height="38" rx="7" class="box"/>
+  <text x="80" y="433" class="body">[Demo] 01 Public Transport</text>
+  <text x="66" y="474" class="small">Writing date · Task/prompt</text>
+  <rect x="66" y="484" width="365" height="42" rx="7" class="box"/>
+  <text x="80" y="509" class="small muted">2026-09-01 · IELTS Task 2 question</text>
+  <text x="66" y="552" class="small">Essay text</text>
+  <rect x="66" y="562" width="365" height="97" rx="7" class="box"/>
+  <text x="80" y="587" class="small muted">In many cities, traffic congestion makes</text>
+  <text x="80" y="609" class="small muted">ordinary journeys slow and unpredictable...</text>
+  <rect x="66" y="676" width="171" height="38" rx="8" fill="#126a78"/>
+  <text x="83" y="701" class="body white">Analyze and save</text>
+  <path d="M66 739 H431" class="line"/>
+  <text x="66" y="764" class="heading">Essay Analysis</text>
+  <text x="66" y="788" class="small muted">Total words · observed forms · count</text>
+  <text x="66" y="815" class="small">Display words used at least 3 times here</text>
+  <text x="66" y="836" class="small muted">Low counts still feed cross-essay totals</text>
+
+  <rect x="471" y="276" width="485" height="579" rx="16" class="panel"/>
+  <text x="491" y="306" class="label">02 · FULL HISTORY</text>
+  <text x="491" y="337" class="panelTitle">Across essays</text>
+  <text x="491" y="362" class="small muted">All five saved essays; same writer, similar genre</text>
+  <rect x="491" y="384" width="445" height="41" rx="7" fill="#e4f1f2"/>
+  <text x="505" y="410" class="small">Display: at least 2 essays and 3 uses in total</text>
+  <text x="500" y="459" class="small muted">LEMMA</text>
+  <text x="665" y="459" class="small muted">ESSAYS</text>
+  <text x="774" y="459" class="small muted">USES</text>
+  <text x="845" y="459" class="small muted">EVIDENCE</text>
+  <path d="M491 470 H936" class="line"/>
+  <text x="500" y="500" class="body">important</text>
+  <text x="679" y="500" class="body">5/5</text>
+  <text x="789" y="500" class="body">13</text>
+  <text x="845" y="500" class="small">View counts ▾</text>
+  <path d="M491 516 H936" class="line"/>
+  <text x="500" y="546" class="body">significant</text>
+  <text x="679" y="546" class="body">5/5</text>
+  <text x="789" y="546" class="body">5</text>
+  <text x="845" y="546" class="small">View counts ▾</text>
+  <path d="M491 562 H936" class="line"/>
+  <text x="500" y="588" class="small muted">One use per essay still becomes five uses here</text>
+  <rect x="491" y="618" width="445" height="193" rx="12" fill="#f4faf8" stroke="#b9d9cf"/>
+  <text x="508" y="648" class="heading">Importance / four-word pilot</text>
+  <text x="508" y="679" class="body">important: 13 / 25 = 52.0%</text>
+  <text x="508" y="704" class="small">significant 5 · essential 5 · crucial 2</text>
+  <path d="M508 722 H919" class="line"/>
+  <text x="508" y="745" class="small muted">Denominator = observed uses of these four words;</text>
+  <text x="508" y="766" class="small muted">not all opportunities or a dependency diagnosis.</text>
+  <text x="508" y="796" class="small" fill="#14665d">Open a source essay from its evidence row</text>
+
+  <rect x="976" y="276" width="418" height="579" rx="16" class="panel"/>
+  <text x="996" y="306" class="label">03 · TRACE EVIDENCE</text>
+  <text x="996" y="337" class="panelTitle">History / sources</text>
+  <text x="996" y="362" class="small muted">Browse by date and review full context</text>
+  <rect x="996" y="391" width="377" height="53" rx="8" class="box"/>
+  <text x="1010" y="416" class="body">[Demo] 05 Flexible Working</text>
+  <text x="1010" y="434" class="small muted">2026-09-09</text>
+  <rect x="996" y="452" width="377" height="53" rx="8" class="box"/>
+  <text x="1010" y="477" class="body">[Demo] 04 Healthy School Meals</text>
+  <text x="1010" y="495" class="small muted">2026-09-07</text>
+  <text x="996" y="536" class="small muted">... three more essays</text>
+  <rect x="996" y="568" width="377" height="216" rx="10" fill="#f5f9fb" stroke="#cfdee4"/>
+  <text x="1011" y="596" class="heading">Essay detail / original</text>
+  <path d="M1011 608 H1356" class="line"/>
+  <text x="1011" y="632" class="small">Title · date · original task/prompt</text>
+  <text x="1011" y="663" class="small muted">Full essay text and current analysis...</text>
+  <text x="1011" y="711" class="small muted">Check whether the topic prompted repetition.</text>
+  <text x="1011" y="734" class="small muted">Review meaning and part of speech in context.</text>
+  <text x="996" y="822" class="small muted">Deletion recalculates both analysis windows.</text>
+
+  <path d="M938 876 H996" fill="none" stroke="#2c8794" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="520" y="897" class="small muted">Selecting an evidence title opens its original in History</text>
+  <path d="M46 928 H1394" class="line"/>
+  <text x="46" y="951" class="small muted">Scope: local storage · no accounts, genre filter, or automatic semantic classification · feature merged via PR #6</text>
+</svg>

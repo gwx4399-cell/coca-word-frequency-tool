@@ -1,8 +1,9 @@
 # DEEA v0.3 技术设计（中文）
 
-**状态**：`feature/across-essay-pilot-v0-3` 分支实现，待合并。**日期**：2026-09-23。  
+**状态**：功能已随 PR #6 合并 `main`；五篇样本及验证附录在 PR #7，待评审。**日期**：2026-09-23。  
 **约束**：Vite / React / TypeScript，原文仍在 `deea.essays.v1` 的浏览器 `localStorage`；无服务器、数据迁移或 AI API。
 **关联 PR**：[v0.3 跨篇统计与词组试验 #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6)。
+**样本与设计补充 PR**：[五篇 IELTS 作文与产品设计图 #7](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/7)。
 
 ## 1. 分析管线
 
@@ -44,6 +45,8 @@ flowchart TD
 
 从项目根目录执行 `npm test`、`npx tsc --noEmit`、`npm run build`。新增测试覆盖 1+1+1 次仍参与跨篇、组内份额、删除重算、零分母、导航到原文；现有测试覆盖单篇隐藏和建议中总次数不足 3 的回退。测试仅使用虚构样例，不提交真实学生作文。
 
+`data/demo/IELTS_TASK2_FIVE_ESSAYS.json` 是五篇原创作文的机器可读输入；对应的 [Markdown 阅读版](../../../data/demo/IELTS_TASK2_FIVE_ESSAYS.md) 供人工逐篇录入。`src/analysis/demoEssays.test.ts` 使用随库 COCA CSV、`analyzeEssay`、`analyzeAcrossEssays` 和 `getWritingAdvice` 验证每篇 ≥250 词、significant 五篇各一次却跨篇累计五次、crucial 累计两次隐藏、四词组 13/25=52.0%、写作建议只看最近三篇。测试样本不写入默认浏览器历史，设计图只展示这五篇是全部历史时的计算值。完整测试现为 **35 个 / 9 个测试文件**。
+
 本次没有目标记录、时间锚点、+1/+3/+5 后测或真正的语义机会分母。下一步应先验证词组的误判与同文体条件，再决定是否扩展意群；不能将本版比例用于自动评价学生。
 
-关联：[PRD 中文](./DEEA_PRD_CN.md) · [Technical design English](./DEEA_TECHNICAL_DESIGN_EN.md) · [文档索引](../../README.md)
+关联：[PRD 中文](./DEEA_PRD_CN.md) · [产品设计图](./DEEA_PRODUCT_DESIGN_CN.md) · [Technical design English](./DEEA_TECHNICAL_DESIGN_EN.md) · [文档索引](../../README.md)
