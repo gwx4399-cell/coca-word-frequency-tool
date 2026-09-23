@@ -20,10 +20,11 @@ flowchart TD
 | 数据结构 | 字段与来源 |
 | --- | --- |
 | `CrossEssayWord` | `lemma`、`totalCount`、`essayCount`、去重的 `observedForms`、逐篇 `occurrences`。 |
+| `AcrossEssayAnalysis.words` | 所有分析得到的 lemma 的完整跨篇统计，包含累计仅 1–2 次的词，供后续规则使用；本版 UI 不直接展示。 |
 | `EssayOccurrence` | `essayId`、标题、写作日期、本篇 lemma 次数和 observed forms；保留 ID 以便跳到原文。 |
 | `PilotGroup` | 四成员次数与组内 `sharePct`、合计次数、涉及作文数、最高频成员和证据是否充足。 |
 
-每篇的 `analyzeEssay` 已把同一 lemma 聚成一行。跨篇遍历所有行并累计，**不先过滤**本篇 1–2 次的词。用于表格的 `repeatedWords` 在累计后才筛选：`essayCount >= 2 && totalCount >= 3`；按出现篇数降序、总次数降序、lemma 字母序排序。逐篇列表保持仓储层的日期排序。单篇 UI 另用 `analysis.lemmas.filter(row => row.count >= 3)`，不改 `analyzeEssay` 的结果类型或 COCA 内部字段。
+每篇的 `analyzeEssay` 已把同一 lemma 聚成一行。跨篇遍历所有行并累计，**不先过滤**本篇 1–2 次的词。完整结果放在 `words`；用于表格的 `repeatedWords` 再筛选：`essayCount >= 2 && totalCount >= 3`；按出现篇数降序、总次数降序、lemma 字母序排序。逐篇列表保持仓储层的日期排序。单篇 UI 另用 `analysis.lemmas.filter(row => row.count >= 3)`，不改 `analyzeEssay` 的结果类型或 COCA 内部字段。
 
 ## 2. 试验组规则及反例
 
