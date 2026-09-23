@@ -44,6 +44,10 @@ export class EssayRepository {
       return duplicate;
     }
 
+    if (essays.some((essay) => essay.title.trim().toLocaleLowerCase('en-US') === normalizedInput.title.toLocaleLowerCase('en-US'))) {
+      throw new EssayValidationError({ title: 'This title is already used. Choose a unique title.' });
+    }
+
     const timestamp = this.now().toISOString();
     const essay: EssayRecord = {
       id: this.createId(),
