@@ -2,6 +2,7 @@
 
 **状态**：`feature/across-essay-pilot-v0-3` 分支实现，待合并。**日期**：2026-09-23。  
 **约束**：Vite / React / TypeScript，原文仍在 `deea.essays.v1` 的浏览器 `localStorage`；无服务器、数据迁移或 AI API。
+**关联 PR**：[v0.3 跨篇统计与词组试验 #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6)。
 
 ## 1. 分析管线
 
