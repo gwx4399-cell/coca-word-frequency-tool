@@ -31,6 +31,7 @@ describe('analysis and automatic save', () => {
     expect(document.body.textContent).toContain('Important, important');
     expect(document.body.textContent).not.toContain('COCA coverage');
     expect(document.body.textContent).not.toContain('Rate per 100');
+    expect(Array.from(document.querySelectorAll('.results tbody tr')).map((row) => row.querySelector('th')?.textContent)).toEqual(['important']);
 
     clickNamedButton('Analyze and save');
     expect(readStoredEssays()).toHaveLength(1);
