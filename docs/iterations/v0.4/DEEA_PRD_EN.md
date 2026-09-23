@@ -1,6 +1,6 @@
 # DEEA v0.4 Product Requirements
 
-**Status:** Implemented on `feature/original-sentence-evidence-v0-4`, pending review and merge. **Date:** 2026-09-23. **Pull request:** Link after creation.
+**Status:** Implemented on `feature/original-sentence-evidence-v0-4`, pending review and merge. **Date:** 2026-09-23. **Pull request:** [Original sentence evidence #9](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/9).
 
 ## Problem and outcome
 
