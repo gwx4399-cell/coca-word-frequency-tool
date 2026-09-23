@@ -1,8 +1,9 @@
 # DEEA v0.3 Technical Design
 
-**Status:** Functionality merged into `main` through PR #6; five-essay fixtures and verification appendix added on a separate branch, pending review. **Date:** 2026-09-23.  
+**Status:** Functionality merged into `main` through PR #6; five-essay fixtures and verification appendix proposed in PR #7, pending review. **Date:** 2026-09-23.  
 **Runtime:** Vite / React / TypeScript. Originals remain under the `deea.essays.v1` browser `localStorage` key; no backend, migration or AI API.
 **Pull request:** [v0.3 cross-essay analysis and pilot #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6).
+**Sample and design follow-up:** [Five IELTS essays and product design #7](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/7).
 
 ## 1. Analysis flow and contracts
 
