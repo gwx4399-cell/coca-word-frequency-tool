@@ -5,7 +5,8 @@
 | 阶段 | 状态 | 产品材料 | 技术材料与验证 |
 | --- | --- | --- | --- |
 | v0.1：从词频原型到 DEEA 的规划 | `main` 中的设计草案；部分功能尚未实现 | [代码差距](./DEEA_GAP_ANALYSIS_CN.md) · [功能树](./DEEA_FEATURE_TREE_CN.md) · [页面架构](./DEEA_PAGE_ARCHITECTURE_CN.md) · [PRD 中文](./DEEA_PRD_CN.md) | 作为后续设计的基线，不是 v0.2 的实现说明。 |
-| v0.2：分析即保存 + 三篇建议 | [代码 PR #4](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/4) 已合并 `main`；[文档 PR #5](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/5) 待合并，公开部署状态待核实 | [PRD 中文](./iterations/v0.2/DEEA_PRD_CN.md) · [PRD English](./iterations/v0.2/DEEA_PRD_EN.md) | [技术设计中文](./iterations/v0.2/DEEA_TECHNICAL_DESIGN_CN.md) · [Technical design English](./iterations/v0.2/DEEA_TECHNICAL_DESIGN_EN.md) · 30 个测试、类型检查、构建通过。 |
+| v0.2：分析即保存 + 三篇建议 | [代码 PR #4](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/4) 与[文档 PR #5](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/5) 已合并 `main`；公开部署状态待核实 | [PRD 中文](./iterations/v0.2/DEEA_PRD_CN.md) · [PRD English](./iterations/v0.2/DEEA_PRD_EN.md) | [技术设计中文](./iterations/v0.2/DEEA_TECHNICAL_DESIGN_CN.md) · [Technical design English](./iterations/v0.2/DEEA_TECHNICAL_DESIGN_EN.md) · 30 个测试、类型检查、构建通过。 |
+| v0.3：跨篇汇总 + 四词意群试验 | `feature/across-essay-pilot-v0-3` 分支已实现，待评审与合并；公开部署状态待核实 | [PRD 中文](./iterations/v0.3/DEEA_PRD_CN.md) · [PRD English](./iterations/v0.3/DEEA_PRD_EN.md) | [技术设计中文](./iterations/v0.3/DEEA_TECHNICAL_DESIGN_CN.md) · [Technical design English](./iterations/v0.3/DEEA_TECHNICAL_DESIGN_EN.md) · 34 个测试、类型检查、构建通过。 |
 
 ## 阅读顺序
 
