@@ -44,6 +44,8 @@ Auto-save and title uniqueness are unchanged. Deleting a record updates browser 
 
 From the project root, run `npm test`, `npx tsc --noEmit`, and `npm run build`. New tests cover 1+1+1 occurrences becoming visible across essays, the group denominator, deletion recalculation, the zero case and navigation to the source essay. Existing UI tests cover hidden one-/two-use rows and the advice fallback below three total uses. Fixtures are invented; no real student writing is committed.
 
+`data/demo/IELTS_TASK2_FIVE_ESSAYS.json` is the machine-readable source for five original essays; the [Markdown reading copy](../../../data/demo/IELTS_TASK2_FIVE_ESSAYS.md) supports manual entry. `src/analysis/demoEssays.test.ts` runs the bundled COCA CSV through `analyzeEssay`, `analyzeAcrossEssays` and `getWritingAdvice`: each essay has at least 250 words; significant appears once in each yet totals five across essays; crucial totals two and is hidden from the repeated-word list; the pilot yields 13/25 = 52.0%; advice uses only the latest three. Fixtures are never silently added to browser history, and wireframe values assume that the five are the complete history. The full suite has **35 tests across nine files**.
+
 This release has no stored learning goal, intervention anchor, +1/+3/+5 follow-up state or actual semantic-opportunity denominator. Evaluate group false positives and same-genre conditions before enlarging the inventory or using a share to assess a student.
 
-Related: [Product requirements](./DEEA_PRD_EN.md) · [技术设计中文](./DEEA_TECHNICAL_DESIGN_CN.md) · [Documentation index](../../README.md)
+Related: [Product requirements](./DEEA_PRD_EN.md) · [product wireframe](./DEEA_PRODUCT_DESIGN_EN.md) · [技术设计中文](./DEEA_TECHNICAL_DESIGN_CN.md) · [Documentation index](../../README.md)
