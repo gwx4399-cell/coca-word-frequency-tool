@@ -31,10 +31,17 @@ describe('writing advice from the most recent three essays', () => {
 
   it('offers a cautious practice prompt if a repeated word falls below the candidate threshold', () => {
     const advice = getWritingAdvice([
-      essay('Three', 'important'), essay('Two', 'important'), essay('One', 'useful'),
+      essay('Three', 'important important'), essay('Two', 'important'), essay('One', 'useful'),
     ], coca);
     expect(advice?.focuses).toHaveLength(1);
     expect(advice?.focuses[0]).toMatchObject({ lemma: 'important', meetsCandidateRule: false });
+  });
+
+  it('keeps one- and two-use totals out of the visible advice list', () => {
+    const advice = getWritingAdvice([
+      essay('Three', 'important'), essay('Two', 'important'), essay('One', 'useful'),
+    ], coca);
+    expect(advice?.focuses).toEqual([]);
   });
 
   it('returns a generic practice prompt when there is no evidence in the sample groups', () => {
