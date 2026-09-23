@@ -2,6 +2,7 @@
 
 **Status:** Implemented on `feature/across-essay-pilot-v0-3`, pending review and merge. **Date:** 2026-09-23.  
 **Iteration:** A reusable cross-essay count and one bounded pilot word group. The application is still rule-based and local; no AI model is connected.
+**Pull request:** [v0.3 cross-essay analysis and pilot #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6).
 
 ## 1. Problem and choice of pace
 
