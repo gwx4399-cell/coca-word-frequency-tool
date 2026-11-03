@@ -1,5 +1,9 @@
 import type { CreateEssayInput, EssayRecord, EssayValidationErrors } from '../types/essay';
 import { tokenize } from '../analysis/tokenize';
+import type { CheckInput, NoteInput } from '../types/teaching';
+import type { EssayMetadata } from '../types/essay';
+import { checkError, goalsFor, learnerOf, rootOf } from '../teaching/workflow';
+import { validAnchor, validTeachingData } from './teachingValidation';
 
 export const ESSAY_STORAGE_KEY = 'deea.essays.v1';
 export const BACKUP_FORMAT = 'deea-essay-backup';
@@ -17,6 +21,7 @@ export type ImportPreview = {
   renamed: number;
   restoring: boolean;
   originalRaw: string | null;
+  notesAdded: number;
 };
 
 export class EssayStorageError extends Error {
@@ -70,7 +75,7 @@ export class EssayRepository {
       return duplicate;
     }
 
-    if (essays.some((essay) => essay.title.trim().toLocaleLowerCase('en-US') === normalizedInput.title.toLocaleLowerCase('en-US'))) {
+    if (essays.some((essay) => learnerOf(essay) === (normalizedInput.learnerId ?? '') && essay.title.trim().toLocaleLowerCase('en-US') === normalizedInput.title.toLocaleLowerCase('en-US'))) {
       throw new EssayValidationError({ title: 'This title is already used. Choose a unique title.' });
     }
 
@@ -82,6 +87,7 @@ export class EssayRepository {
       updatedAt: timestamp,
     };
 
+    if (!validTeachingData([...essays, essay])) throw new Error('修改稿必须关联同一学生、文体和任务的原文，日期不能早于原文。请从历史作文创建修改稿。');
     this.writeEssays([...essays, essay]);
     return essay;
   }
@@ -98,6 +104,10 @@ export class EssayRepository {
 
   deleteEssay(id: string): boolean {
     const essays = this.listEssays();
+    if (essays.some((essay) => essay.revisionOf === id || essay.notes?.some((note) => note.goal?.checks.some((check) => check.essayId === id)))
+      || essays.find((essay) => essay.id === id)?.notes?.some((note) => note.goal?.checks.length)) {
+      throw new Error('这篇作文关联了修改稿或学习核查，暂不能删除，以免失去原句证据。');
+    }
     const remaining = essays.filter((essay) => essay.id !== id);
 
     if (remaining.length === essays.length) {
@@ -126,7 +136,7 @@ export class EssayRepository {
   }
 
   exportBackup(): string {
-    return JSON.stringify({ format: BACKUP_FORMAT, version: 1, exportedAt: this.now().toISOString(), essays: this.listEssays() }, null, 2);
+    return JSON.stringify({ format: BACKUP_FORMAT, version: 2, exportedAt: this.now().toISOString(), essays: this.listEssays() }, null, 2);
   }
 
   previewImport(serialized: string): ImportPreview {
@@ -134,17 +144,30 @@ export class EssayRepository {
     try { parsed = JSON.parse(serialized); } catch { throw new Error('文件不是有效的 JSON 备份，现有作文未改变。'); }
     if (!parsed || typeof parsed !== 'object') throw new Error('请选择 DEEA 导出的备份文件。');
     const backup = parsed as Record<string, unknown>;
-    if (backup.format !== BACKUP_FORMAT || backup.version !== 1 || !isEssayArray(backup.essays)) {
+    if (backup.format !== BACKUP_FORMAT || (backup.version !== 1 && backup.version !== 2) || !isEssayArray(backup.essays)) {
       throw new Error('备份格式、版本或作文记录无效；未导入任何内容。');
     }
     const snapshot = this.inspect();
     if (snapshot.issue === 'unavailable') throw new EssayStorageError('unavailable');
     if (snapshot.issue === 'corrupt' && !backup.essays.length) throw new Error('空备份不能恢复损坏的历史，请选择包含作文的备份。');
-    const essays = [...snapshot.essays];
+    const essays = snapshot.essays.map((essay) => ({ ...essay, ...(essay.notes ? { notes: [...essay.notes] } : {}) }));
     let skipped = 0;
     let renamed = 0;
-    for (const record of backup.essays) {
-      if (essays.some((essay) => hasSameContent(essay, normalizeEssayInput(record)))) {
+    let notesAdded = 0;
+    const idMap = new Map<string, string>();
+    const ordered: EssayRecord[] = [];
+    const visit = (record: EssayRecord) => {
+      if (ordered.includes(record)) return;
+      if (record.revisionOf) visit((backup.essays as EssayRecord[]).find((item) => item.id === record.revisionOf)!);
+      ordered.push(record);
+    };
+    backup.essays.forEach(visit);
+    for (const record of ordered) {
+      const input = normalizeEssayInput({ ...record, revisionOf: record.revisionOf ? idMap.get(record.revisionOf) : undefined });
+      const duplicate = essays.find((essay) => hasSameContent(essay, input)
+        || (essay.title.startsWith(`${record.title.trim()} (imported `) && hasSameContent(essay, { ...input, title: essay.title })));
+      if (duplicate) {
+        idMap.set(record.id, duplicate.id);
         skipped++;
         continue;
       }
@@ -152,21 +175,30 @@ export class EssayRepository {
       let id = record.id;
       for (let suffix = 2; essays.some((essay) => essay.id === id); suffix++) id = `${record.id}-import-${suffix}`;
       let title = record.title.trim();
-      for (let suffix = 2; essays.some((essay) => essay.title.trim().toLowerCase() === title.toLowerCase()); suffix++) {
+      for (let suffix = 2; essays.some((essay) => learnerOf(essay) === (input.learnerId ?? '') && essay.title.trim().toLowerCase() === title.toLowerCase()); suffix++) {
         title = `${record.title.trim()} (imported ${suffix})`;
       }
-      // A repeated import of a previously renamed conflict must also be idempotent.
-      if (essays.some((essay) => essay.title.startsWith(`${record.title.trim()} (imported `)
-        && essay.text === record.text && essay.writtenAt === record.writtenAt
-        && essay.taskPrompt === (record.taskPrompt?.trim() || undefined))) {
-        skipped++;
-        continue;
-      }
       if (title !== record.title.trim()) renamed++;
-      essays.push({ ...record, ...normalizeEssayInput(record), id, title });
+      idMap.set(record.id, id);
+      essays.push({ ...record, ...input, id, title, notes: undefined });
     }
+    // Remap the whole graph, including forward references in goal checks.
+    // Conflicting notes are retained as separate versions, never silently overwritten.
+    for (const record of ordered) {
+      const target = essays.find((essay) => essay.id === idMap.get(record.id))!;
+      for (const original of record.notes ?? []) {
+        const note = { ...original, ...(original.goal ? { goal: { ...original.goal, checks: original.goal.checks.map((check) => ({ ...check, essayId: idMap.get(check.essayId)! })) } } : {}) };
+        const notes = target.notes ?? [];
+        if (notes.some((existing) => stableValue({ ...existing, id: '' }) === stableValue({ ...note, id: '' }))) continue;
+        let id = note.id;
+        for (let suffix = 2; notes.some((existing) => existing.id === id); suffix++) id = `${note.id}-import-${suffix}`;
+        target.notes = [...notes, { ...note, id }];
+        notesAdded++;
+      }
+    }
+    if (!validTeachingData(essays)) throw new Error('备份中的修改关系或教学证据不完整，未导入任何内容。');
     return { essays: essays.sort(compareEssaysNewestFirst), added: essays.length - snapshot.essays.length,
-      skipped, renamed, restoring: snapshot.issue === 'corrupt', originalRaw: snapshot.raw };
+      skipped, renamed, notesAdded, restoring: snapshot.issue === 'corrupt', originalRaw: snapshot.raw };
   }
 
   importBackup(serialized: string, expectedRaw: string | null): ImportPreview {
@@ -181,6 +213,69 @@ export class EssayRepository {
     }
     this.writeEssays(preview.essays);
     return preview;
+  }
+
+  updateMetadata(id: string, metadata: Pick<EssayMetadata, 'learnerId' | 'genre' | 'taskId'> & { draftKind?: 'original' | 'independent' }): void {
+    const essays = this.listEssays();
+    const source = essays.find((essay) => essay.id === id);
+    if (!source) throw new Error('作文已不存在，请刷新后重试。');
+    const root = rootOf(source, essays).id;
+    const updates = { learnerId: metadata.learnerId?.trim() || undefined, genre: metadata.genre?.trim() || undefined, taskId: metadata.taskId?.trim() || undefined };
+    const next = essays.map((essay) => rootOf(essay, essays).id === root ? { ...essay, ...updates,
+      ...(essay.id === root && metadata.draftKind ? { draftKind: metadata.draftKind } : {}), updatedAt: this.now().toISOString() } : essay);
+    if (!validTeachingData(next)) throw new Error('此分组更改会使已有学习目标或跨篇证据失去关联，请保留原学生和任务。');
+    this.writeEssays(next);
+  }
+
+  saveNote(essayId: string, input: NoteInput): void {
+    const essays = this.listEssays();
+    const essay = essays.find((item) => item.id === essayId);
+    if (!essay || !validAnchor(input, essay.text)) throw new Error('请选择当前原文中的完整证据，正文未被改动。');
+    if (!input.reason.trim()) throw new Error('请写下保留或修改这句的理由。');
+    const previous = essay.notes?.find((note) => note.id === input.id);
+    if (input.id && !previous) throw new Error('这条判断已改变，请重新打开。');
+    if (previous?.goal && !input.goal) throw new Error('已有目标请使用“归档目标”保留核查记录。');
+    if (input.goal && (!learnerOf(essay) || !input.goal.instruction.trim())) throw new Error('请先指定学生，并写下具体学习目标。');
+    if (input.goal && !previous?.goal && goalsFor(essays, learnerOf(essay)).length >= 2) throw new Error('每位学生同时保留最多两个练习目标。请先归档已有目标，再新增。');
+    const now = this.now().toISOString();
+    const note = { ...input, id: previous?.id ?? this.createId(), reason: input.reason.trim(),
+      createdAt: previous?.createdAt ?? now, updatedAt: now,
+      goal: input.goal ? { instruction: input.goal.instruction.trim(), practice: input.goal.practice.trim(),
+        checks: previous?.goal?.checks ?? [], archived: previous?.goal?.archived ?? false } : undefined };
+    essay.notes = [...(essay.notes ?? []).filter((item) => item.id !== note.id), note];
+    essay.updatedAt = now;
+    if (!validTeachingData(essays)) throw new Error('教学判断的字段或原句证据无效，请核查后重试。');
+    this.writeEssays(essays);
+  }
+
+  setGoalArchived(essayId: string, noteId: string, archived: boolean): void {
+    const essays = this.listEssays();
+    const essay = essays.find((item) => item.id === essayId);
+    const note = essay?.notes?.find((item) => item.id === noteId);
+    if (!essay || !note?.goal) throw new Error('未找到学习目标。');
+    if (!archived && note.goal.archived && goalsFor(essays, learnerOf(essay)).length >= 2) throw new Error('请先归档一个目标，每位学生最多同时练习两个。');
+    note.goal.archived = archived;
+    note.updatedAt = this.now().toISOString();
+    this.writeEssays(essays);
+  }
+
+  saveGoalCheck(essayId: string, noteId: string, input: CheckInput): void {
+    const essays = this.listEssays();
+    const source = essays.find((item) => item.id === essayId);
+    const note = source?.notes?.find((item) => item.id === noteId);
+    const target = essays.find((item) => item.id === input.essayId);
+    if (!source || !note?.goal) throw new Error('未找到学习目标。');
+    const error = checkError(source, target, input.status, essays);
+    if (error) throw new Error(error);
+    if (input.status !== 'no-opportunity' && !validAnchor(input.evidence, target!.text)) throw new Error('请选择后续作文中的原句作为核查证据。');
+    if (!input.reason.trim()) throw new Error('请写下核查依据；次数变化不能代替判断。');
+    const previous = note.goal.checks.find((check) => check.essayId === input.essayId);
+    const now = this.now().toISOString();
+    note.goal.checks = [...note.goal.checks.filter((check) => check.essayId !== input.essayId),
+      { ...input, id: previous?.id ?? this.createId(), reason: input.reason.trim(), reflection: input.reflection.trim(), createdAt: previous?.createdAt ?? now, updatedAt: now }];
+    note.updatedAt = now;
+    if (!validTeachingData(essays)) throw new Error('核查内容无效，请重新选择原句和状态。');
+    this.writeEssays(essays);
   }
 
   private get storage(): Storage {
@@ -237,6 +332,11 @@ function normalizeEssayInput(input: CreateEssayInput): CreateEssayInput {
     writtenAt: input.writtenAt.trim(),
     taskPrompt: taskPrompt || undefined,
     text: input.text,
+    ...(input.learnerId?.trim() ? { learnerId: input.learnerId.trim() } : {}),
+    ...(input.genre?.trim() ? { genre: input.genre.trim() } : {}),
+    ...(input.taskId?.trim() ? { taskId: input.taskId.trim() } : {}),
+    ...(input.draftKind ? { draftKind: input.draftKind } : {}),
+    ...(input.revisionOf ? { revisionOf: input.revisionOf } : {}),
   };
 }
 
@@ -246,6 +346,11 @@ function hasSameContent(essay: EssayRecord, input: CreateEssayInput): boolean {
     essay.writtenAt === input.writtenAt &&
     essay.taskPrompt === input.taskPrompt &&
     essay.text === input.text
+    && (essay.learnerId ?? '') === (input.learnerId ?? '')
+    && (essay.genre ?? '') === (input.genre ?? '')
+    && (essay.taskId ?? '') === (input.taskId ?? '')
+    && (essay.draftKind ?? 'original') === (input.draftKind ?? 'original')
+    && essay.revisionOf === input.revisionOf
   );
 }
 
@@ -286,7 +391,13 @@ function isEssayRecord(value: unknown): value is EssayRecord {
 
 function isEssayArray(value: unknown): value is EssayRecord[] {
   return Array.isArray(value) && value.every(isEssayRecord)
-    && new Set(value.map((record) => record.id)).size === value.length;
+    && new Set(value.map((record) => record.id)).size === value.length && validTeachingData(value);
+}
+
+function stableValue(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableValue).join(',')}]`;
+  if (value && typeof value === 'object') return `{${Object.entries(value).filter(([, item]) => item !== undefined).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => `${JSON.stringify(key)}:${stableValue(item)}`).join(',')}}`;
+  return JSON.stringify(value);
 }
 
 function defaultCreateId(): string {

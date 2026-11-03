@@ -8,7 +8,7 @@ import { ESSAY_STORAGE_KEY } from './storage/essayRepository';
 import type { EssayRecord } from './types/essay';
 
 function essay(id: string, text: string): EssayRecord {
-  return { id, title: `Essay ${id}`, writtenAt: `2026-09-${id.padStart(2, '0')}`, text, createdAt: '2026-09-23T10:00:00Z', updatedAt: '2026-09-23T10:00:00Z' };
+  return { id, title: `Essay ${id}`, learnerId: 'Student A', genre: '议论文 / Argument', writtenAt: `2026-09-${id.padStart(2, '0')}`, text, createdAt: '2026-09-23T10:00:00Z', updatedAt: '2026-09-23T10:00:00Z' };
 }
 
 describe('cross-essay view', () => {
@@ -37,6 +37,10 @@ describe('cross-essay view', () => {
   it('shows cross-essay totals, a bounded pilot share, and links back to source essays', () => {
     const tab = Array.from(document.querySelectorAll('button')).find((button) => button.textContent?.trim() === 'Across essays');
     act(() => tab?.click());
+    for (const [id, value] of [['scope-learner', 'Student A'], ['scope-genre', '议论文 / Argument']]) {
+      const select = document.getElementById(id) as HTMLSelectElement;
+      act(() => { select.value = value; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    }
 
     const view = document.querySelector('.across-essays');
     expect(view?.textContent).toContain('跨篇统计');

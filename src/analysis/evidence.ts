@@ -13,13 +13,16 @@ export function findLemmaMatches(text: string, lemma: string, entries: CocaLemma
 
 export function getSentenceEvidence(text: string, lemma: string, entries: CocaLemmaMap): SentenceEvidence[] {
   const matches = findLemmaMatches(text, lemma, entries);
-  const segments = typeof Intl.Segmenter === 'function'
+  return sentenceSpans(text).flatMap((segment) => {
+    const contained = matches.filter((match) => match.start >= segment.start && match.end <= segment.end);
+    return contained.length ? [{ ...segment, matches: contained }] : [];
+  });
+}
+
+export function sentenceSpans(text: string): TextSpan[] {
+  return typeof Intl.Segmenter === 'function'
     ? Array.from(new Intl.Segmenter('en', { granularity: 'sentence' }).segment(text),
       ({ index, segment }) => ({ start: index, end: index + segment.length }))
     : Array.from(text.matchAll(/[^.!?\n]+(?:[.!?]+|(?=\n)|$)/g),
       (match) => ({ start: match.index, end: match.index + match[0].length }));
-  return segments.flatMap((segment) => {
-    const contained = matches.filter((match) => match.start >= segment.start && match.end <= segment.end);
-    return contained.length ? [{ ...segment, matches: contained }] : [];
-  });
 }
