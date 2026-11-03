@@ -4,6 +4,21 @@ import { analyzeEssay } from './analyzeEssay';
 import { parseCocaCsv } from './coca';
 
 describe('essay analysis with the bundled COCA CSV', () => {
+  it('keeps add forms together without confusing adding with an advertisement', () => {
+    const entries = parseCocaCsv(cocaCsv);
+    const result = analyzeEssay('add added adding ad', entries);
+    expect(result.lemmas.find((row) => row.lemma === 'add')).toMatchObject({ count: 3, observedForms: ['add', 'added', 'adding'] });
+    expect(result.lemmas.find((row) => row.lemma === 'ad')?.count).toBe(1);
+  });
+
+  it('groups supported irregular verbs while keeping ambiguous exact lemmas', () => {
+    const entries = parseCocaCsv(cocaCsv);
+    const result = analyzeEssay('write writes wrote written take took taken give gave given choose chose chosen saw', entries);
+    for (const [lemma, count] of [['write', 4], ['take', 3], ['give', 3], ['choose', 3]] as const) {
+      expect(result.lemmas.find((row) => row.lemma === lemma)?.count).toBe(count);
+    }
+    expect(result.lemmas.find((row) => row.lemma === 'saw')?.count).toBe(1);
+  });
   it('uses real COCA lemmas without matching risky shorter words', () => {
     const cocaEntries = parseCocaCsv(cocaCsv);
     const result = analyzeEssay('use uses used using care cared caring child children', cocaEntries);

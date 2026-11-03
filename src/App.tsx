@@ -6,12 +6,17 @@ import { parseCocaCsv, type CocaLemmaMap } from './analysis/coca';
 import { getWritingAdvice, type WritingAdvice } from './analysis/writingAdvice';
 import {
   EssayRepository,
+  EssayStorageError,
   EssayValidationError,
   validateEssayInput,
 } from './storage/essayRepository';
 import type { EssayAnalysis } from './types/analysis';
 import type { CreateEssayInput, EssayRecord, EssayValidationErrors } from './types/essay';
+import { BackupPanel } from './components/BackupPanel';
+import { HighlightedText, WordEvidence } from './components/WordEvidence';
+import { findLemmaMatches } from './analysis/evidence';
 import './style.css';
+import './review.css';
 
 const formatNumber = new Intl.NumberFormat('en-US');
 
@@ -33,10 +38,20 @@ function App() {
   const [fieldErrors, setFieldErrors] = useState<EssayValidationErrors>({});
   const [analysis, setAnalysis] = useState<EssayAnalysis | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [essays, setEssays] = useState<EssayRecord[]>(() => repository.listEssays());
+  const [history, setHistory] = useState(() => repository.inspect());
+  const essays = history.essays;
+  const refreshHistory = () => setHistory(repository.inspect());
+  useEffect(() => {
+    const refresh = () => setHistory(repository.inspect());
+    window.addEventListener('storage', refresh);
+    return () => window.removeEventListener('storage', refresh);
+  }, [repository]);
   const writingAdvice = useMemo(() => getWritingAdvice(essays, cocaEntries), [essays, cocaEntries]);
   const acrossEssays = useMemo(() => analyzeAcrossEssays(essays, cocaEntries), [essays, cocaEntries]);
   const [selectedEssayId, setSelectedEssayId] = useState<string | null>(null);
+  const [selectedLemma, setSelectedLemma] = useState<string | null>(null);
+  const [fromAcross, setFromAcross] = useState(false);
+  const [expandedLemma, setExpandedLemma] = useState<string | null>(null);
   const [essayPendingDeletion, setEssayPendingDeletion] = useState<EssayRecord | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -70,14 +85,15 @@ function App() {
     setAnalysis(analyzeEssay(form.text, cocaEntries));
     try {
       const savedEssay = repository.createEssay(form);
-      setEssays(repository.listEssays());
+      refreshHistory();
       setFeedback({ kind: 'success', message: `Analysis complete. "${savedEssay.title}" is saved in this browser.` });
     } catch (error) {
       if (error instanceof EssayValidationError) {
         setFieldErrors(error.fieldErrors);
         setFeedback({ kind: 'error', message: error.fieldErrors.title ?? 'The essay could not be saved.' });
       } else {
-        setFeedback({ kind: 'error', message: 'The essay could not be saved in this browser.' });
+        setFeedback({ kind: 'error', message: error instanceof EssayStorageError ? error.message : 'The essay could not be saved in this browser.' });
+        refreshHistory();
       }
     }
   };
@@ -100,7 +116,7 @@ function App() {
     try {
       const deletedEssay = essayPendingDeletion;
       repository.deleteEssay(deletedEssay.id);
-      setEssays(repository.listEssays());
+      refreshHistory();
 
       if (selectedEssayId === deletedEssay.id) {
         setSelectedEssayId(null);
@@ -117,7 +133,8 @@ function App() {
     <main className="home">
       <section className="word-tool" aria-labelledby="page-title">
         <h1 id="page-title">DEEA - Academic English Evolution Agent</h1>
-        <p className="subtitle">Analyze an English essay and save it in this browser.</p>
+        <p className="subtitle">从重复用词回到原句，找到下一次写作可以练习的一处表达。</p>
+        <p className="workspace-guide">New essay 新作文 → History 历史作文 → Across essays 跨篇观察。当前浏览器只放同一位写作者的同类作文；本工具不评分。</p>
 
         <nav className="view-tabs" aria-label="Essay workspace">
           <button
@@ -146,6 +163,13 @@ function App() {
           </button>
         </nav>
 
+        {history.issue && <div className="storage-alert" role="alert">
+          <strong>历史暂不可用，已暂停写入。</strong>
+          <p>{new EssayStorageError(history.issue).message}</p>
+          <button type="button" className="text-button" onClick={refreshHistory}>重新读取历史</button>
+        </div>}
+        <BackupPanel repository={repository} history={history} onChanged={refreshHistory} />
+
         {writingAdvice && <WritingAdvicePanel advice={writingAdvice} />}
 
         {activeView === 'new' ? (
@@ -153,7 +177,7 @@ function App() {
             <div className="form-grid">
               <FormField
                 id="essay-title"
-                label="Title"
+                label="Title / 作文标题"
                 error={fieldErrors.title}
               >
                 <input
@@ -169,7 +193,7 @@ function App() {
 
               <FormField
                 id="writing-date"
-                label="Writing date"
+                label="Writing date / 写作日期"
                 error={fieldErrors.writtenAt}
               >
                 <input
@@ -185,7 +209,7 @@ function App() {
               </FormField>
             </div>
 
-            <FormField id="task-prompt" label="Task/prompt (optional)">
+            <FormField id="task-prompt" label="Task/prompt / 写作题目（可选）">
               <textarea
                 id="task-prompt"
                 className="prompt-input"
@@ -195,7 +219,7 @@ function App() {
               />
             </FormField>
 
-            <FormField id="essay-input" label="Essay text" error={fieldErrors.text}>
+            <FormField id="essay-input" label="Essay text / 作文正文" error={fieldErrors.text}>
               <textarea
                 id="essay-input"
                 className="essay-input"
@@ -209,9 +233,14 @@ function App() {
             </FormField>
 
             <div className="form-actions">
-              <button className="primary-button" type="button" onClick={handleAnalyze}>
+              <button className="primary-button" type="button" disabled={!!history.issue} onClick={handleAnalyze}>
                 Analyze and save
               </button>
+              {feedback?.kind === 'success' && <button className="secondary-button" type="button" onClick={() => {
+                setForm({ title: '', writtenAt: getTodayDate(), taskPrompt: '', text: '' });
+                setAnalysis(null); setFeedback(null); setFieldErrors({});
+                document.getElementById('essay-title')?.focus();
+              }}>写下一篇 / Start next essay</button>}
             </div>
 
             {feedback && (
@@ -220,21 +249,28 @@ function App() {
               </p>
             )}
 
-            {analysis && <AnalysisResults analysis={analysis} />}
+            {analysis && <AnalysisResults key={form.text} analysis={analysis} text={form.text} cocaEntries={cocaEntries} />}
           </section>
-        ) : activeView === 'history' ? (
+        ) : history.issue ? <p className="empty-state">请先在上方恢复或重新读取历史，再查看已保存作文。</p> : activeView === 'history' ? (
           <HistoryView
             essays={essays}
             selectedEssayId={selectedEssayId}
             cocaEntries={cocaEntries}
-            onOpen={setSelectedEssayId}
+            selectedLemma={selectedLemma}
+            onSelectLemma={setSelectedLemma}
+            onOpen={(id) => { setSelectedEssayId(id); setSelectedLemma(null); setFromAcross(false); }}
+            onBackAcross={fromAcross ? () => setActiveView('progress') : undefined}
             onDelete={requestDelete}
           />
         ) : (
           <AcrossEssaysView
             analysis={acrossEssays}
-            onOpenEssay={(id) => {
+            expandedLemma={expandedLemma}
+            onExpand={(lemma, open) => setExpandedLemma((current) => open ? lemma : current === lemma ? null : current)}
+            onOpenEssay={(id, lemma) => {
               setSelectedEssayId(id);
+              setSelectedLemma(lemma);
+              setFromAcross(true);
               setActiveView('history');
             }}
           />
@@ -331,12 +367,18 @@ function HistoryView({
   cocaEntries,
   onOpen,
   onDelete,
+  selectedLemma,
+  onSelectLemma,
+  onBackAcross,
 }: {
   essays: EssayRecord[];
   selectedEssayId: string | null;
   cocaEntries: CocaLemmaMap;
   onOpen: (id: string | null) => void;
   onDelete: (essay: EssayRecord) => void;
+  selectedLemma: string | null;
+  onSelectLemma: (lemma: string | null) => void;
+  onBackAcross?: () => void;
 }) {
   const summaries = useMemo(
     () => essays.map((essay) => ({ essay, analysis: analyzeEssay(essay.text, cocaEntries) })),
@@ -360,6 +402,8 @@ function HistoryView({
         )}
       </div>
 
+      {onBackAcross && <button type="button" className="text-button back-across" onClick={onBackAcross}>← 返回跨篇统计</button>}
+
       {selected ? (
         <article className="history-detail">
           <h3>{selected.essay.title}</h3>
@@ -372,11 +416,12 @@ function HistoryView({
               <p>{selected.essay.taskPrompt}</p>
             </div>
           )}
+          {selectedLemma && <WordEvidence text={selected.essay.text} lemma={selectedLemma} entries={cocaEntries} onClose={() => onSelectLemma(null)} />}
           <div className="essay-evidence">
             <strong>Original essay</strong>
-            <pre>{selected.essay.text}</pre>
+            <pre><HighlightedText text={selected.essay.text} matches={selectedLemma ? findLemmaMatches(selected.essay.text, selectedLemma, cocaEntries) : []} /></pre>
           </div>
-          <AnalysisResults analysis={selected.analysis} />
+          <AnalysisResults key={selected.essay.id} analysis={selected.analysis} text={selected.essay.text} cocaEntries={cocaEntries} onSelectLemma={onSelectLemma} />
         </article>
       ) : essays.length > 0 ? (
         <div className="history-list">
@@ -404,12 +449,22 @@ function HistoryView({
   );
 }
 
-function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
-  const visibleLemmas = analysis.lemmas.filter((row) => row.count >= 3);
+function AnalysisResults({ analysis, text, cocaEntries, onSelectLemma }: {
+  analysis: EssayAnalysis; text: string; cocaEntries: CocaLemmaMap; onSelectLemma?: (lemma: string) => void;
+}) {
+  const [lemma, setLemma] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [search, setSearch] = useState('');
+  const query = search.trim().toLowerCase().replace(/’/g, "'");
+  const visibleLemmas = analysis.lemmas.filter((row) => (query || showAll || row.count >= 3)
+    && (!query || row.lemma.includes(query) || row.observedForms.some((form) => form.toLowerCase().replace(/’/g, "'").includes(query))));
   return (
     <section className="results" aria-live="polite" aria-label="Essay analysis results">
       <h2>Essay Analysis</h2>
       <p className="word-count">{formatNumber.format(analysis.totalWordCount)} total words</p>
+      <p className="analysis-help">点击词语查看原句。基本形式（Lemma）将 write、wrote 等词形放在一起；归并可能有误，请结合原文核查。</p>
+      <label className="filter-toggle"><input type="checkbox" checked={showAll} onChange={(event) => setShowAll(event.target.checked)} /> 显示全部分析词（包括只出现 1–2 次的词）</label>
+      <label className="word-search">查找词语（也搜索低次数词和原文词形）<input type="search" className="text-input" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="例如 write 或 wrote" /></label>
 
       {visibleLemmas.length > 0 ? (
         <div className="frequency-table-wrapper">
@@ -424,7 +479,7 @@ function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
             <tbody>
               {visibleLemmas.map((lemmaResult) => (
                 <tr key={lemmaResult.lemma}>
-                  <th scope="row">{lemmaResult.lemma}</th>
+                  <th scope="row"><button type="button" className="word-button" aria-label={`查看 ${lemmaResult.lemma} 的原句`} onClick={() => onSelectLemma ? onSelectLemma(lemmaResult.lemma) : setLemma(lemmaResult.lemma)}>{lemmaResult.lemma}</button></th>
                   <td>{lemmaResult.observedForms.join(', ')}</td>
                   <td>{formatNumber.format(lemmaResult.count)}</td>
                 </tr>
@@ -433,8 +488,10 @@ function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
           </table>
         </div>
       ) : (
-        <p className="empty-state">No word appears three or more times in this essay. All counts still contribute to cross-essay analysis.</p>
+        <p className="empty-state">{query ? '没有匹配的分析词。请检查拼写；常见功能词已排除。' : '当前没有出现至少 3 次的分析词。可勾选上方“显示全部分析词”查看原句；低次数仍计入跨篇统计。这不表示没有需要改进的表达。'}</p>
       )}
+      {lemma && !onSelectLemma && <WordEvidence text={text} lemma={lemma} entries={cocaEntries} onClose={() => setLemma(null)} />}
+      <p className="analysis-help">默认只列出至少 3 次的词，已排除常见功能词。次数用于寻找线索，不表示词语用错或应被替换。</p>
     </section>
   );
 }
@@ -442,9 +499,13 @@ function AnalysisResults({ analysis }: { analysis: EssayAnalysis }) {
 function AcrossEssaysView({
   analysis,
   onOpenEssay,
+  expandedLemma,
+  onExpand,
 }: {
   analysis: AcrossEssayAnalysis;
-  onOpenEssay: (id: string) => void;
+  onOpenEssay: (id: string, lemma: string) => void;
+  expandedLemma: string | null;
+  onExpand: (lemma: string, open: boolean) => void;
 }) {
   const group = analysis.pilotGroup;
   return (
@@ -465,12 +526,12 @@ function AcrossEssaysView({
                   <td>{word.essayCount}/{analysis.essayCount}</td>
                   <td>{word.totalCount}</td>
                   <td>
-                    <details>
+                    <details open={expandedLemma === word.lemma} onToggle={(event) => onExpand(word.lemma, event.currentTarget.open)}>
                       <summary>View essay counts</summary>
                       <ul className="occurrence-list">
                         {word.occurrences.map((item) => (
                           <li key={item.essayId}>
-                            <button className="text-button" type="button" onClick={() => onOpenEssay(item.essayId)}>{item.title}</button>
+                            <button className="text-button" type="button" aria-label={`${item.title}：查看 ${word.lemma} 的原句`} onClick={() => onOpenEssay(item.essayId, word.lemma)}>{item.title}</button>
                             <span> · {item.writtenAt} · {item.count} 次 · {item.observedForms.join(', ')}</span>
                           </li>
                         ))}
@@ -487,6 +548,7 @@ function AcrossEssaysView({
       )}
 
       <h3>{group.label}</h3>
+      <p className="analysis-help">这四个词不一定表达相同含义。例如 statistically significant 有特定的统计含义，不能直接当作日常的“重要”来替换。</p>
       {!group.enoughForDisplay ? (
         <p className="empty-state">这个试验词组目前不足 3 次或不足 2 篇，暂不显示占比。</p>
       ) : (
@@ -509,8 +571,8 @@ function AcrossEssaysView({
 
 function WritingAdvicePanel({ advice }: { advice: WritingAdvice }) {
   return (
-    <section className="writing-advice" aria-labelledby="writing-advice-title">
-      <h2 id="writing-advice-title">Writing advice / 写作建议</h2>
+    <details className="writing-advice" aria-labelledby="writing-advice-title">
+      <summary id="writing-advice-title">Writing advice / 最近三篇练习提示（展开）</summary>
       <p>基于最近 {advice.essayCount} 篇已保存作文。建议先查看原句，再决定如何拓展表达。</p>
       {advice.focuses.length > 0 ? (
         <div className="advice-list">
@@ -526,7 +588,7 @@ function WritingAdvicePanel({ advice }: { advice: WritingAdvice }) {
         <p>这三篇中，示例形容词组尚未出现明显重复。下一篇可以选一处评价性表达，写出更具体的含义，再检查用词是否准确。</p>
       )}
       <p className="advice-caveat">重复次数是核查线索，不代表词语使用错误；当前工具无法判断每次用词的词性或语境，也不把换成低频词当作进步。请只比较同类写作任务。</p>
-    </section>
+    </details>
   );
 }
 

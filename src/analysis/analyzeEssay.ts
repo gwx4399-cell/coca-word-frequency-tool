@@ -31,6 +31,16 @@ const LEMMA_OVERRIDES = new Map([
   ['feet', 'foot'],
   ['went', 'go'],
   ['gone', 'go'],
+  ['wrote', 'write'],
+  ['written', 'write'],
+  ['took', 'take'],
+  ['taken', 'take'],
+  ['gave', 'give'],
+  ['given', 'give'],
+  ['chose', 'choose'],
+  ['chosen', 'choose'],
+  // Like used/use, this is an explicit convention, not contextual PoS tagging.
+  ['added', 'add'],
 ]);
 
 export function analyzeEssay(text: string, cocaEntries: CocaLemmaMap): EssayAnalysis {
@@ -166,7 +176,8 @@ function getLemmaCandidates(word: string): string[] {
 }
 
 function addStemCandidates(candidates: string[], stem: string): void {
-  if (stem.length > 2 && stem[stem.length - 1] === stem[stem.length - 2]) {
+  // Do not turn adding into ad: doubled-stem reduction must leave >=3 letters.
+  if (stem.length > 3 && stem[stem.length - 1] === stem[stem.length - 2]) {
     addCandidate(candidates, stem.slice(0, -1));
   }
 

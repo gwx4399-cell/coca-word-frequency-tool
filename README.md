@@ -2,7 +2,11 @@
 
 > 一篇作文能告诉我们某个词出现了几次；多篇作文才能让教师和学习者看到它是否反复出现在不同写作任务中。DEEA 把单篇分析、作文历史与跨篇证据连在一起，帮助用户决定**哪些表达值得回到原句核查**。
 
-**当前状态：v0.3 原型。**DEEA 在界面中展开为 Academic English Evolution Agent。工具在浏览器本地运行，使用 COCA 衍生的高频词表辅助词形归并；写作提示由明确的规则和少量人工词表生成。名称中的 Agent 是产品命名，**当前没有接入 AI 模型，不提供自动评分或语义诊断**。
+**当前分支：v0.4 原型，已在本地实现，尚未合并或发布。**DEEA 在界面中展开为 Academic English Evolution Agent。工具在浏览器本地运行，使用 COCA 衍生的高频词表辅助词形归并；写作提示由明确的规则和少量人工词表生成。名称中的 Agent 是产品命名，**当前没有接入 AI 模型，不提供自动评分或语义诊断**。
+
+v0.4 增加原句定位与高亮、低次数词搜索、JSON 备份恢复和损坏历史保护，修正 adding → ad 等归并问题。[三轮模拟体验记录](./docs/iterations/v0.4/USABILITY_REVIEW_CN.md) · [中文 PRD](./docs/iterations/v0.4/DEEA_PRD_CN.md) · [English PRD](./docs/iterations/v0.4/DEEA_PRD_EN.md)。
+
+![v0.4 原句核查的实际界面，使用虚构测试文本](./docs/iterations/v0.4/evidence/source-review.jpg)
 
 面向场景：同一写作者的多篇英语议论文，例如 IELTS Task 2；英语教师或学习者可以查看重复用词的逐篇证据，再结合题目和语境讨论下一步练习。
 
@@ -14,11 +18,12 @@
 
 | 视图 / 能力 | 已实现的用户行为 | 解释边界 |
 | --- | --- | --- |
-| **New essay / 单篇分析** | 输入标题、写作日期、可选题目与正文；点击 Analyze and save 后立即分析并保存。显示总词数，以及本篇出现至少 **3 次**的词、observed forms 与次数。 | 出现 1–2 次的词只从单篇表格隐藏，底层分析仍保留。标题在同一浏览器内须唯一；重复分析相同作文不会再保存一份。 |
-| **History / 作文历史** | 按日期打开已保存作文，查看原文、题目和重新计算的分析结果；删除前会要求确认。 | 当前只在浏览器本地保存，无账号或跨设备同步。 |
+| **New essay / 单篇分析** | 输入标题、写作日期、可选题目与正文；点击 Analyze and save 后立即分析并保存。默认显示出现至少 **3 次**的词；可显示全部或按基本形式/原文词形搜索，点击词语查看高亮原句。保存后可开始下一篇。 | 搜索包含 1–2 次的词，底层分析不变。标题在同一浏览器内须唯一；重复分析相同作文不会再保存一份。 |
+| **History / 作文历史** | 按日期打开已保存作文，查看原文、题目和重新计算的分析结果；词语证据与全文均高亮；删除前会要求确认。 | 当前只在浏览器本地保存，无账号或自动跨设备同步。 |
+| **Backup & restore / 备份恢复** | 导出 JSON；导入前预览新增、重复、改名数量和作文标题，确认后合并。历史损坏时暂停写入，可下载原始数据并从有效备份恢复。 | 导入不覆盖同名的不同文本。恢复前保留损坏原文；清除站点数据也会删除浏览器内的恢复副本，因此应下载外部备份。 |
 | **Across essays / 跨篇复现** | 汇总当前浏览器中**全部**已保存作文。列表显示至少出现于 **2 篇**且累计至少 **3 次**的 lemma，可展开查看每篇次数、词形和原文入口。 | 单篇 1–2 次的记录仍进入跨篇累计；尚无作者或文体筛选。 |
 | **写作建议** | 保存至少 **3 篇**后，依据**最近 3 篇**生成有限的练习提示；无合格词时给一般练习方向。 | 只覆盖预设的少量形容词；次数是复核线索，不等于用词错误。 |
-| **“重要性”四词试验** | 比较 important、significant、essential、crucial 的观测词次；仅在总数至少 **3 次**且涉及至少 **2 篇**时显示组内占比。 | 分母只含这四个词的出现次数，无法统计所有表达“重要性”的机会，不能诊断“意群依赖”。 |
+| **四词观测组** | 比较 important、significant、essential、crucial 的观测词次；仅在总数至少 **3 次**且涉及至少 **2 篇**时显示组内占比。 | 分母只含这四个词的出现次数，不能诊断“意群依赖”；如 statistically significant 可能有不同含义，不能直接替换。 |
 
 COCA 的派生 rank、词频以及覆盖率仍可供程序内部查询，**不作为写作质量分数展示**。每百词频率也没有作为界面指标。
 
@@ -27,7 +32,7 @@ COCA 的派生 rank、词频以及覆盖率仍可供程序内部查询，**不�
 仓库提供 [五篇原创 IELTS Task 2 测试作文（阅读版）](./data/demo/IELTS_TASK2_FIVE_ESSAYS.md)和 [JSON 数据](./data/demo/IELTS_TASK2_FIVE_ESSAYS.json)。五篇均超过 250 词，假设由同一写作者完成，便于测试同类议论文；它们是虚构样本，**不是经评分的雅思范文**。
 
 1. 在 New essay 中按阅读版的标题、日期、题目和正文依次录入五篇，每篇点击 **Analyze and save**。样本不会自动写入你的历史。
-2. 保存第三篇后查看 Writing advice：它只使用最近三篇。进入 Across essays 查看累计结果：这里使用全部已保存作文。
+2. 保存第三篇后展开 Writing advice：它只使用最近三篇。进入 Across essays 查看累计结果：这里使用全部已保存作文。
 3. 展开 `significant`：这五篇中它每篇只出现 **1 次**，所以单篇词表隐藏，跨篇则显示 **5/5 篇、累计 5 次**。
 4. 查看四词试验组：如果浏览器历史**只有这五篇**，`important` 为 **13/25 = 52.0%**。再从词条证据打开原文，核查不同题目是否自然诱发重复。
 
@@ -57,7 +62,7 @@ npm run preview    # 本地预览构建结果
 
 ## 项目如何验证、如何继续
 
-- **可复现验证**：35 个自动测试覆盖文本分析、保存/删除、跨篇汇总、低次数显示规则、四词分母、原文链接，以及五篇样本的预期计数；另运行 TypeScript 检查与生产构建。软件测试证明规则按预期执行，**尚未证明教学效果**。
+- **可复现验证**：50 个自动测试覆盖文本分析、保存/删除、跨篇汇总、原句高亮、低次数搜索、备份预览/取消/确认/重复、损坏恢复及五篇样本的预期计数；另运行 TypeScript 检查与生产构建。三种学生角色及教师完成三轮模拟走查；无真实参与者，**尚未证明教学效果**。
 - **当前限制**：词形还原与分词是轻量确定性规则；没有上下文词性/词义识别。所有历史作文被一起统计，写作者、文体和题目差异需人工核查。COCA 数据为 Top-frequency 衍生词表，不是完整语料库。
 - **后续设计，尚未实现**：同文体比较范围、人工核查的语义机会、可持续的词汇目标、目标后 +1/+3/+5 篇观察、AWL/UWL 与 AI 生成建议。早期 Growth 首页与目标详情属于[页面架构提案](./docs/DEEA_PAGE_ARCHITECTURE_CN.md)，不是现有页面。
 
@@ -65,6 +70,7 @@ npm run preview    # 本地预览构建结果
 
 | 想看什么 | 对应材料 |
 | --- | --- |
+| v0.4 可靠性与原句核查 | [PRD 中文](./docs/iterations/v0.4/DEEA_PRD_CN.md) / [English](./docs/iterations/v0.4/DEEA_PRD_EN.md) · [技术设计中文](./docs/iterations/v0.4/DEEA_TECHNICAL_DESIGN_CN.md) / [English](./docs/iterations/v0.4/DEEA_TECHNICAL_DESIGN_EN.md) · [模拟体验记录](./docs/iterations/v0.4/USABILITY_REVIEW_CN.md) |
 | 产品问题、验收标准、已实现与未实现的边界 | [v0.3 PRD 中文](./docs/iterations/v0.3/DEEA_PRD_CN.md) / [English](./docs/iterations/v0.3/DEEA_PRD_EN.md) |
 | 数据流、规则、失败回退与测试方法 | [v0.3 技术设计中文](./docs/iterations/v0.3/DEEA_TECHNICAL_DESIGN_CN.md) / [English](./docs/iterations/v0.3/DEEA_TECHNICAL_DESIGN_EN.md) |
 | 页面关系与原型工具取舍 | [产品设计图和中文说明](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_CN.md) / [English](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_EN.md) |
@@ -78,4 +84,4 @@ npm run preview    # 本地预览构建结果
 
 ## English overview
 
-DEEA is a browser-based, rule-driven prototype for reviewing word-choice patterns across essays by the same writer. It saves essays locally, shows repeated lemmas with per-essay evidence, and offers limited practice prompts after three essays. The four-word importance pilot reports only the share of observed uses within its configured word set; it is not a semantic-dependency measure, an IELTS score, or AI-generated feedback. Five original, unscored IELTS Task 2 samples and a product wireframe make the demo reproducible. Read the [English PRD](./docs/iterations/v0.3/DEEA_PRD_EN.md), [technical design](./docs/iterations/v0.3/DEEA_TECHNICAL_DESIGN_EN.md), and [design notes](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_EN.md) for decisions and limitations.
+DEEA is a browser-based, rule-driven prototype for reviewing word-choice patterns across essays by the same writer. The locally implemented v0.4 branch adds sentence evidence with exact highlights, low-count word search, corrected inflections, versioned backups and guarded recovery. It has not been merged or publicly deployed. The four-word pilot is an observed-count comparison, not a semantic diagnosis, IELTS score or AI feedback. Three student personas and a teacher were exercised in three rounds of simulated tasks using fictional, unscored excerpts. Read the [English PRD](./docs/iterations/v0.4/DEEA_PRD_EN.md) and [technical design](./docs/iterations/v0.4/DEEA_TECHNICAL_DESIGN_EN.md) for behavior and limits.

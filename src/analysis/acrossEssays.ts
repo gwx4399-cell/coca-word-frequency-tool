@@ -89,7 +89,7 @@ export function analyzeAcrossEssays(essays: EssayRecord[], cocaEntries: CocaLemm
     words,
     repeatedWords,
     pilotGroup: {
-      label: '表达重要性 / Importance (pilot)',
+      label: '四词观测组 / Four-word pilot',
       totalCount,
       essayCount: essayIds.size,
       members,

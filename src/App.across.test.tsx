@@ -51,5 +51,7 @@ describe('cross-essay view', () => {
     const link = Array.from(details?.querySelectorAll('button') ?? []).find((button) => button.textContent === 'Essay 3');
     act(() => link?.click());
     expect(document.querySelector('.history-detail')?.textContent).toContain('Essay 3');
+    expect([...document.querySelectorAll('.word-evidence mark')].map((mark) => mark.textContent)).toEqual(['Important', 'important']);
+    expect(document.querySelectorAll('.essay-evidence mark')).toHaveLength(2);
   });
 });

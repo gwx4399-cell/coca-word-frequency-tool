@@ -1,6 +1,8 @@
 export type TextToken = {
   surface: string;
   normalized: string;
+  start: number;
+  end: number;
 };
 
 export type CocaSourceRecord = {
