@@ -1,81 +1,83 @@
-# DEEA｜跨篇英语写作词汇观察原型
+# DEEA｜写作观察与练习
 
-> 一篇作文能告诉我们某个词出现了几次；多篇作文才能让教师和学习者看到它是否反复出现在不同写作任务中。DEEA 把单篇分析、作文历史与跨篇证据连在一起，帮助用户决定**哪些表达值得回到原句核查**。
+DEEA 把原句证据、教师判断和后续写作连接起来：按学生整理作文，选择一个具体目标，再核查修改稿和新的独立任务。词频用于寻找线索，不能代替语境判断或证明学习进步。
 
-**当前状态：v0.3 原型。**DEEA 在界面中展开为 Academic English Evolution Agent。工具在浏览器本地运行，使用 COCA 衍生的高频词表辅助词形归并；写作提示由明确的规则和少量人工词表生成。名称中的 Agent 是产品命名，**当前没有接入 AI 模型，不提供自动评分或语义诊断**。
+**当前分支：v0.5，[草稿 PR #10](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/10) 已实现，尚未合并或发布。**
 
-面向场景：同一写作者的多篇英语议论文，例如 IELTS Task 2；英语教师或学习者可以查看重复用词的逐篇证据，再结合题目和语境讨论下一步练习。
+DEEA 的英文名称是 Academic English Evolution Agent；当前在浏览器本地运行，使用 COCA 衍生词表与明确规则，没有接入 AI 模型，不自动评分或诊断语义。
 
-![DEEA v0.3 三个视图的产品结构草图](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN.svg)
+![学习目标、修改稿与新任务证据；使用虚构演示材料](./docs/iterations/v0.5/evidence/learning-goals.jpg)
 
-*这是产品结构图，不是实际页面截图。[设计说明：中文](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_CN.md) · [English](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_EN.md)。*
+## 先用模拟材料体验
 
-## 当前可以体验什么
+无需教师账号或真实学生材料：
 
-| 视图 / 能力 | 已实现的用户行为 | 解释边界 |
-| --- | --- | --- |
-| **New essay / 单篇分析** | 输入标题、写作日期、可选题目与正文；点击 Analyze and save 后立即分析并保存。显示总词数，以及本篇出现至少 **3 次**的词、observed forms 与次数。 | 出现 1–2 次的词只从单篇表格隐藏，底层分析仍保留。标题在同一浏览器内须唯一；重复分析相同作文不会再保存一份。 |
-| **History / 作文历史** | 按日期打开已保存作文，查看原文、题目和重新计算的分析结果；删除前会要求确认。 | 当前只在浏览器本地保存，无账号或跨设备同步。 |
-| **Across essays / 跨篇复现** | 汇总当前浏览器中**全部**已保存作文。列表显示至少出现于 **2 篇**且累计至少 **3 次**的 lemma，可展开查看每篇次数、词形和原文入口。 | 单篇 1–2 次的记录仍进入跨篇累计；尚无作者或文体筛选。 |
-| **写作建议** | 保存至少 **3 篇**后，依据**最近 3 篇**生成有限的练习提示；无合格词时给一般练习方向。 | 只覆盖预设的少量形容词；次数是复核线索，不等于用词错误。 |
-| **“重要性”四词试验** | 比较 important、significant、essential、crucial 的观测词次；仅在总数至少 **3 次**且涉及至少 **2 篇**时显示组内占比。 | 分母只含这四个词的出现次数，无法统计所有表达“重要性”的机会，不能诊断“意群依赖”。 |
+1. 展开 **批量导入与模拟练习**，点击 **预览三组模拟练习**。核对新增记录后确认；现有作文保留。
+2. 进入 **Learning goals**，选择“演示·基础练习”“演示·表达拓展”或“演示·语义与语气”。每组有一个目标和原稿、修改稿、新任务三个短切片。
+3. 查看原句与教师理由，从“记录或更新一次核查”中选择新任务、具体原句和人工判断，填写依据并保存。未核查不等于掌握，没有适用机会也不记为失败。
+4. 进入 **History** 查看原稿与修改稿对照；可创建新的修改稿或保存教学判断。使用 **下载反馈单（可打印）** 获取包含理由、练习与后续证据的 HTML 文件，浏览器可打印或保存 PDF。
+5. 在 **Across essays** 选定学生和文体，选择每任务原稿或最新稿，并核对比较范围。同一任务的多个版本只取一份。
 
-COCA 的派生 rank、词频以及覆盖率仍可供程序内部查询，**不作为写作质量分数展示**。每百词频率也没有作为界面指标。
+这些是虚构、未评分的短文切片，不是完整 IELTS 答卷或真实教学实验。初次载入不会自动判定新任务表现。重复导入相同内容不新增作文；如果改动过演示判断，再次导入可能保留另一个判断版本供核对。
 
-## 用五篇作文复现跨篇统计
+## 当前能力
 
-仓库提供 [五篇原创 IELTS Task 2 测试作文（阅读版）](./data/demo/IELTS_TASK2_FIVE_ESSAYS.md)和 [JSON 数据](./data/demo/IELTS_TASK2_FIVE_ESSAYS.json)。五篇均超过 250 词，假设由同一写作者完成，便于测试同类议论文；它们是虚构样本，**不是经评分的雅思范文**。
+| 能力 | 行为与边界 |
+| --- | --- |
+| 单篇分析 | 默认展示出现至少 3 次的分析词，可搜索原文词形和低次数词，定位原句并高亮。规则归并可能出错，需要看原文。 |
+| 学生与任务 | 学生编号/昵称、文体、任务名称和稿件类型。旧记录保持未分组。同名学生需不同编号；这些是分组标识，不是登录账号。标题在同一学生下须唯一。 |
+| 跨篇观察 | 先选学生、文体和稿件范围，每任务只取一稿。至少两篇、累计三次的词才进入复现列表。显示每篇词数及每百词频率，便于考虑篇幅，不作为质量分。最近三篇提示也使用所选范围。 |
+| 修改关系 | 从历史创建修改稿，原文不变，保留版本关系和并排对照。新的独立任务由使用者明确标记，工具不验证是否独立完成。 |
+| 教学判断 | 选择原句，记录保留、具体化、搭配/语气、归并错误与理由。可编辑保存的判断；不会自动改动原文或分析算法。 |
+| 学习目标 | 通常每位学生同时最多两个目标。人工核查修改稿、新任务、仍需练习或无适用机会，保存依据和学生反思。可归档、恢复。 |
+| 批量导入 | 选学生、文体和共享写作日期，预览并导入多个 UTF-8 TXT。每文件是一个任务原稿；修改稿从历史创建。最多 50 文件/3 MB。 |
+| 反馈单 | 下载当前学生活跃目标，或某个任务全部版本中的教学判断。HTML 文件有 A4 打印样式，长内容会分页。 |
+| 备份与恢复 | v2 JSON 包含全部学生、原文、版本、判断、目标和核查，兼容 v1 导入。确认前预览，冲突内容保留，损坏历史暂停写入。JSON 文件上限 10 MB，浏览器容量可能更小。 |
 
-1. 在 New essay 中按阅读版的标题、日期、题目和正文依次录入五篇，每篇点击 **Analyze and save**。样本不会自动写入你的历史。
-2. 保存第三篇后查看 Writing advice：它只使用最近三篇。进入 Across essays 查看累计结果：这里使用全部已保存作文。
-3. 展开 `significant`：这五篇中它每篇只出现 **1 次**，所以单篇词表隐藏，跨篇则显示 **5/5 篇、累计 5 次**。
-4. 查看四词试验组：如果浏览器历史**只有这五篇**，`important` 为 **13/25 = 52.0%**。再从词条证据打开原文，核查不同题目是否自然诱发重复。
-
-现有历史会参与“全部作文”的计算。想复现上面的精确数字，请使用空白的浏览器资料或浏览器无痕窗口，避免覆盖或混入你已有的作文。
+四词观测组仍仅比较 important、significant、essential、crucial 的出现次数。其占比分母不是所有表达“重要性”的机会；例如 statistically significant 可能有特定含义。计数下降、替换成低频词或目标词没有出现，都不会自动判定进步。
 
 ## 在本地运行
 
-推荐使用仓库持续集成配置中的 **Node.js 22** 和 npm。Windows PowerShell 示例：
+推荐与 CI 一致的 Node.js 22。进入本项目目录后运行：
 
-```powershell
-git clone https://github.com/gwx4399-cell/coca-word-frequency-tool.git
-cd coca-word-frequency-tool
+```bash
 npm ci
 npm run dev
 ```
 
-打开终端显示的本地网址。若 GitHub 连接中断，也可以从仓库的 **Code → Download ZIP** 下载并解压，然后在解压后的项目目录运行 `npm ci` 和 `npm run dev`；执行 npm 命令前应能看到该目录中的 `package.json`。
+验证与生产预览：
 
 ```bash
-npm test           # 运行自动测试
-npx tsc --noEmit   # TypeScript 类型检查
-npm run build      # 生产构建
-npm run preview    # 本地预览构建结果
+npm test
+npx tsc --noEmit
+npm run build
+npm run preview
 ```
 
-作文保存在当前访问地址的浏览器 `localStorage` 中：刷新页面仍在；清除站点数据会丢失；`localhost` 与其他访问地址的数据互不相通。分析与保存都在浏览器内完成，正文不会因使用本工具上传到服务器。
+作文与教学记录只保存在当前浏览器地址的 localStorage；不因分析、导入或保存而上传。清理站点数据或换设备前需要外部备份。不同访问地址的数据独立；没有云同步或自动草稿保存。
 
-## 项目如何验证、如何继续
+## 验证与已知边界
 
-- **可复现验证**：35 个自动测试覆盖文本分析、保存/删除、跨篇汇总、低次数显示规则、四词分母、原文链接，以及五篇样本的预期计数；另运行 TypeScript 检查与生产构建。软件测试证明规则按预期执行，**尚未证明教学效果**。
-- **当前限制**：词形还原与分词是轻量确定性规则；没有上下文词性/词义识别。所有历史作文被一起统计，写作者、文体和题目差异需人工核查。COCA 数据为 Top-frequency 衍生词表，不是完整语料库。
-- **后续设计，尚未实现**：同文体比较范围、人工核查的语义机会、可持续的词汇目标、目标后 +1/+3/+5 篇观察、AWL/UWL 与 AI 生成建议。早期 Growth 首页与目标详情属于[页面架构提案](./docs/DEEA_PAGE_ARCHITECTURE_CN.md)，不是现有页面。
+71 项测试覆盖分析、学生隔离、稿件选择、原句锚点、目标及人工核查、旧数据兼容、备份冲突与引用重映射、容量失败、TXT 整批导入及反馈单转义。另运行类型检查、生产构建和浏览器模拟走查；大词表包体提示仍存在。
 
-### 作品集证据索引
+没有真实教师或学生参与，没有测量时间节省、满意度或学习效果。人工保存的核查状态是教学记录，不是自动测评。暂未验证真实移动硬件、辅助技术、大规模历史或长期课堂使用；没有账号权限管理、LMS 集成、上下文词义诊断或 AI 建议。
 
-| 想看什么 | 对应材料 |
+| 材料 | 入口 |
 | --- | --- |
-| 产品问题、验收标准、已实现与未实现的边界 | [v0.3 PRD 中文](./docs/iterations/v0.3/DEEA_PRD_CN.md) / [English](./docs/iterations/v0.3/DEEA_PRD_EN.md) |
-| 数据流、规则、失败回退与测试方法 | [v0.3 技术设计中文](./docs/iterations/v0.3/DEEA_TECHNICAL_DESIGN_CN.md) / [English](./docs/iterations/v0.3/DEEA_TECHNICAL_DESIGN_EN.md) |
-| 页面关系与原型工具取舍 | [产品设计图和中文说明](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_CN.md) / [English](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_EN.md) |
-| 实际代码与可核对的变更 | [跨篇功能 PR #6](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/6) / [五篇样本与设计图 PR #7](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/7) / [完整版本文档索引](./docs/README.md) |
+| v0.5 产品需求 | [中文](./docs/iterations/v0.5/DEEA_PRD_CN.md) / [English](./docs/iterations/v0.5/DEEA_PRD_EN.md) |
+| v0.5 技术设计 | [中文](./docs/iterations/v0.5/DEEA_TECHNICAL_DESIGN_CN.md) / [English](./docs/iterations/v0.5/DEEA_TECHNICAL_DESIGN_EN.md) |
+| 模拟走查与截图 | [体验记录](./docs/iterations/v0.5/USABILITY_REVIEW_CN.md) |
+| 实际下载的示例反馈单 | [HTML](./docs/iterations/v0.5/evidence/sample-feedback.html)，仅含虚构材料 |
+| 历史版本与作品集证据 | [完整文档索引](./docs/README.md) / [v0.4 原句核查](./docs/iterations/v0.4/USABILITY_REVIEW_CN.md) |
+
+原有[五篇完整测试作文](./data/demo/IELTS_TASK2_FIVE_ESSAYS.md)继续参与回归。若手动录入，给它们指定相同学生、议论文文体和不同任务名称，再选该学生/文体查看统计。它们也是虚构、未评分样本。
 
 ## 数据来源与许可
 
 **Word frequency data from the Corpus of Contemporary American English (COCA).** Source text: wordfrequency.info.
 
-仓库附带的是 COCA 衍生的 Top-frequency 数据，不是完整 COCA。项目代码的 MIT 许可**不等于**该词频数据也按 MIT 授权；转载或复用数据前请阅读 [NOTICE](./NOTICE.md)和[数据说明](./data/README_COCA_top5050.txt)，并核对数据提供方的现行条款。
+附带数据是 COCA 衍生的 Top-frequency 词表，不是完整语料库。代码的 MIT 许可不等于该数据也按 MIT 授权；参阅 [NOTICE](./NOTICE.md)和[数据说明](./data/README_COCA_top5050.txt)。
 
 ## English overview
 
-DEEA is a browser-based, rule-driven prototype for reviewing word-choice patterns across essays by the same writer. It saves essays locally, shows repeated lemmas with per-essay evidence, and offers limited practice prompts after three essays. The four-word importance pilot reports only the share of observed uses within its configured word set; it is not a semantic-dependency measure, an IELTS score, or AI-generated feedback. Five original, unscored IELTS Task 2 samples and a product wireframe make the demo reproducible. Read the [English PRD](./docs/iterations/v0.3/DEEA_PRD_EN.md), [technical design](./docs/iterations/v0.3/DEEA_TECHNICAL_DESIGN_EN.md), and [design notes](./docs/iterations/v0.3/DEEA_PRODUCT_DESIGN_EN.md) for decisions and limitations.
+DEEA is a browser-local teaching workflow connecting source sentences, human decisions, learning goals, revisions and later independent writing. The v0.5 draft branch adds student/task scoping, one-draft-per-task comparison, anchored notes, manual goal checks, batch TXT import and printable feedback. Version 2 backups preserve all relationships and accept legacy v1 data. Three fictional scenarios let the owner exercise the workflow without claiming a teacher study. Counts, suggested prompts and recorded judgments do not establish writing quality or learning gains. The branch is not merged or publicly deployed.

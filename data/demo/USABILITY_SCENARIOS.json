@@ -1,0 +1,59 @@
+{
+  "notice": "AI-created, fictional, unscored excerpts for task walkthroughs; not IELTS exemplars or evidence of teaching effectiveness. Each group is isolated. Three rounds use one new excerpt per round.",
+  "scenarios": [
+    {
+      "group": "foundation",
+      "persona": "约 IELTS 4–5 分：需要中文引导，容易把重复理解为错误。仅为任务假设，未评分。",
+      "essays": [
+        {
+          "title": "基础组 · School sports · 1",
+          "text": "Sport is good for students. It is good because students can make friends. My school has a good playground, but some students do not use it. Last week I wrote about football. I have written a plan for our club, and I want to write to the teacher. Adding a short game after class can help. I added this idea to my plan. However, some students need time to study. Schools should give them a choice."
+        },
+        {
+          "title": "基础组 · School meals · 2",
+          "text": "School food should be good for children. A good meal gives students energy, and good food can help them study. Our school added fruit last month. Adding vegetables is another useful idea. I wrote a letter about the menu. Some children do not like vegetables, so teachers can explain why they matter. Families should also have a choice. A cheaper lunch is useful for parents who work all day."
+        },
+        {
+          "title": "基础组 · Free libraries · 3",
+          "text": "A library is useful for children. It has good books and a quiet room. A useful library opens after school, because many parents work late. I took my brother there yesterday. We have taken books home before. The council is adding new seats, and it added a computer last year. This is good for students who cannot study at home. Libraries should stay free, but they need money for staff."
+        }
+      ]
+    },
+    {
+      "group": "intermediate",
+      "persona": "约 IELTS 5.5–6.5 分：从通用评价词走向具体论点，需核查跨篇证据。仅为任务假设，未评分。",
+      "essays": [
+        {
+          "title": "中等组 · Public transport · 1",
+          "text": "Public transport is important for a growing city. An important reason is that buses can reduce traffic during the morning rush. Another important benefit is access to jobs for people who cannot drive. Last month, our council took advice from residents. It has taken a small step by adding an evening route. This is a significant change for shift workers. However, increasing the number of buses alone will not solve every problem. Services must be reliable, and tickets must remain affordable. The council should compare journey times before it spends more money."
+        },
+        {
+          "title": "中等组 · Online learning · 2",
+          "text": "Online learning is important for students who live far from a college. Flexible schedules are important for people with jobs, while feedback is essential for beginners. One significant advantage is that recorded lessons can be watched again. However, this does not make every course effective. A useful course includes clear tasks and regular discussion. Teachers should check whether students understand the material instead of counting completed videos. I wrote about access in my first draft and have written a more specific example in this version."
+        },
+        {
+          "title": "中等组 · Public parks · 3",
+          "text": "Public parks provide an important place for exercise. Safe paths are essential for older residents, and shade is crucial during hot weather. A significant benefit is the opportunity to meet neighbours without paying for a ticket. However, a park cannot help everyone if it is far from their homes. The council should ask residents where new spaces are needed. Regular maintenance is important because broken lights can discourage evening visitors. A useful policy would publish repair times and let residents report problems."
+        }
+      ]
+    },
+    {
+      "group": "advanced",
+      "persona": "约 IELTS 6.5–7.5 分：低次数词、多义词及论证适切性；重复少不等于更好。仅为任务假设，未评分。",
+      "essays": [
+        {
+          "title": "较高组 · Urban trees · 1",
+          "text": "Urban planting can mitigate summer heat, although its benefits depend on species selection and maintenance. A significant reduction in surface temperature does not necessarily imply an equally large improvement in public health. Shade is essential near schools, whereas a diverse canopy may improve resilience elsewhere. Policymakers should therefore assess local conditions before adopting uniform targets. Community participation can sustain maintenance, but volunteers cannot replace specialist care. The most defensible strategy combines measurable outcomes with long-term funding."
+        },
+        {
+          "title": "较高组 · Evidence and policy · 2",
+          "text": "A statistically significant result may have limited practical value. Policymakers should consider the size of an effect, its uncertainty and the conditions under which it was observed. Independent scrutiny is essential when a policy will affect vulnerable residents. Public consultation can expose overlooked costs, although participation alone does not guarantee representative evidence. A defensible decision explains how competing objectives were weighed. Publishing that reasoning allows later reviewers to distinguish an unfortunate outcome from an unjustified choice."
+        },
+        {
+          "title": "较高组 · Museum access · 3",
+          "text": "Removing admission charges can broaden access to museums, but the consequences depend on funding arrangements. Reliable support is essential if a larger audience increases conservation costs. A significant change in visitor numbers should therefore be interpreted alongside the diversity of those visitors. Outreach may matter more than price for communities that feel excluded. Curators must balance accessibility with the preservation of fragile collections. Public evaluation should examine both objectives rather than treating attendance as the sole measure of success."
+        }
+      ]
+    }
+  ]
+}

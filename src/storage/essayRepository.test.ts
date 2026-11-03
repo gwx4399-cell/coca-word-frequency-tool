@@ -6,6 +6,7 @@ import {
   ESSAY_STORAGE_KEY,
   EssayRepository,
   EssayValidationError,
+  EssayStorageError,
 } from './essayRepository';
 
 const validInput: CreateEssayInput = {
@@ -50,14 +51,93 @@ describe('EssayRepository', () => {
     expect(repository.deleteEssay('missing')).toBe(false);
   });
 
-  it('returns an empty list for corrupted storage content', () => {
+  it('reports corrupted history and blocks writes without losing the original payload', () => {
     const storage = new MemoryStorage();
     storage.setItem(ESSAY_STORAGE_KEY, '{not valid JSON');
 
-    expect(new EssayRepository(storage).listEssays()).toEqual([]);
+    const repository = new EssayRepository(storage);
+    expect(repository.inspect().issue).toBe('corrupt');
+    expect(() => repository.listEssays()).toThrow(EssayStorageError);
+    expect(() => repository.createEssay(validInput)).toThrow(EssayStorageError);
+    expect(() => repository.deleteEssay('essay-1')).toThrow(EssayStorageError);
+    expect(() => repository.exportBackup()).toThrow(EssayStorageError);
+    expect(storage.getItem(ESSAY_STORAGE_KEY)).toBe('{not valid JSON');
 
     storage.setItem(ESSAY_STORAGE_KEY, JSON.stringify({ essays: [] }));
-    expect(new EssayRepository(storage).listEssays()).toEqual([]);
+    expect(repository.inspect().issue).toBe('corrupt');
+  });
+
+  it('exports and imports complete source records and skips a repeated import', () => {
+    const source = createRepository(new MemoryStorage());
+    const original = source.createEssay(validInput);
+    const backup = source.exportBackup();
+    const target = createRepository(new MemoryStorage());
+    expect(target.previewImport(backup)).toMatchObject({ added: 1, skipped: 0, restoring: false });
+    expect(target.listEssays()).toEqual([]);
+    target.importBackup(backup, null);
+    expect(target.listEssays()).toEqual([original]);
+    const preview = target.previewImport(backup);
+    expect(preview).toMatchObject({ added: 0, skipped: 1 });
+    target.importBackup(backup, preview.originalRaw);
+    expect(target.listEssays()).toEqual([original]);
+  });
+
+  it('preserves different texts with conflicting IDs and titles on repeated import', () => {
+    const first = createRepository(new MemoryStorage());
+    first.createEssay(validInput);
+    const second = createRepository(new MemoryStorage());
+    second.createEssay({ ...validInput, text: 'A different source text.' });
+    const backup = second.exportBackup();
+    const preview = first.previewImport(backup);
+    expect(preview).toMatchObject({ added: 1, renamed: 1 });
+    first.importBackup(backup, preview.originalRaw);
+    const again = first.previewImport(backup);
+    first.importBackup(backup, again.originalRaw);
+    expect(first.listEssays()).toHaveLength(2);
+    expect(new Set(first.listEssays().map((essay) => essay.id)).size).toBe(2);
+    expect(new Set(first.listEssays().map((essay) => essay.text))).toEqual(new Set([validInput.text, 'A different source text.']));
+  });
+
+  it('rejects invalid or partial backups atomically and detects changed history', () => {
+    const storage = new MemoryStorage();
+    const repository = createRepository(storage);
+    repository.createEssay(validInput);
+    const original = storage.getItem(ESSAY_STORAGE_KEY);
+    const backup = JSON.parse(repository.exportBackup());
+    backup.essays.push({ id: 'invalid' });
+    expect(() => repository.previewImport(JSON.stringify(backup))).toThrow();
+    expect(storage.getItem(ESSAY_STORAGE_KEY)).toBe(original);
+    const validBackup = repository.exportBackup();
+    repository.createEssay({ ...validInput, title: 'Another' });
+    expect(() => repository.importBackup(validBackup, original)).toThrow('历史在预览后已改变');
+    expect(repository.listEssays()).toHaveLength(2);
+  });
+
+  it('preserves damaged data in a separate key before explicitly restoring a backup', () => {
+    const source = createRepository(new MemoryStorage());
+    source.createEssay(validInput);
+    const storage = new MemoryStorage();
+    const damaged = '[{"text":"Keep this unfinished original"}';
+    storage.setItem(ESSAY_STORAGE_KEY, damaged);
+    const repository = createRepository(storage);
+    const backup = source.exportBackup();
+    expect(repository.previewImport(backup).restoring).toBe(true);
+    repository.importBackup(backup, damaged);
+    expect(repository.listEssays()).toHaveLength(1);
+    const recoveryKey = Array.from({ length: storage.length }, (_, index) => storage.key(index)).find((key) => key?.startsWith('deea.essays.recovery.'))!;
+    expect(storage.getItem(recoveryKey)).toBe(damaged);
+  });
+
+  it('keeps existing data when storage is full and reports unavailable storage separately', () => {
+    const storage = new MemoryStorage();
+    const repository = createRepository(storage);
+    repository.createEssay(validInput);
+    const original = storage.getItem(ESSAY_STORAGE_KEY);
+    storage.setItem = () => { throw new Error('QuotaExceededError'); };
+    expect(() => repository.createEssay({ ...validInput, title: 'New' })).toThrow(EssayStorageError);
+    expect(storage.getItem(ESSAY_STORAGE_KEY)).toBe(original);
+    storage.getItem = () => { throw new Error('SecurityError'); };
+    expect(repository.inspect().issue).toBe('unavailable');
   });
 
   it('rejects an empty title, empty text, and invalid date', () => {

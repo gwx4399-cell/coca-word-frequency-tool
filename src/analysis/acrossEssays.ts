@@ -8,6 +8,8 @@ export type EssayOccurrence = {
   writtenAt: string;
   count: number;
   observedForms: string[];
+  totalWordCount: number;
+  per100: number;
 };
 
 export type CrossEssayWord = {
@@ -48,7 +50,8 @@ export function analyzeAcrossEssays(essays: EssayRecord[], cocaEntries: CocaLemm
   const byLemma = new Map<string, CrossEssayWord>();
 
   for (const essay of essays) {
-    for (const row of analyzeEssay(essay.text, cocaEntries).lemmas) {
+    const analysis = analyzeEssay(essay.text, cocaEntries);
+    for (const row of analysis.lemmas) {
       let word = byLemma.get(row.lemma);
       if (!word) {
         word = { lemma: row.lemma, totalCount: 0, essayCount: 0, observedForms: [], occurrences: [] };
@@ -63,6 +66,8 @@ export function analyzeAcrossEssays(essays: EssayRecord[], cocaEntries: CocaLemm
         writtenAt: essay.writtenAt,
         count: row.count,
         observedForms: row.observedForms,
+        totalWordCount: analysis.totalWordCount,
+        per100: analysis.totalWordCount ? row.count / analysis.totalWordCount * 100 : 0,
       });
       for (const form of row.observedForms) {
         if (!word.observedForms.includes(form)) word.observedForms.push(form);
@@ -89,7 +94,7 @@ export function analyzeAcrossEssays(essays: EssayRecord[], cocaEntries: CocaLemm
     words,
     repeatedWords,
     pilotGroup: {
-      label: '表达重要性 / Importance (pilot)',
+      label: '四词观测组 / Four-word pilot',
       totalCount,
       essayCount: essayIds.size,
       members,

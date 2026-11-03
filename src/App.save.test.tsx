@@ -52,6 +52,8 @@ describe('analysis and automatic save', () => {
   });
 
   it('offers evidence-based writing advice immediately after the third saved essay', () => {
+    fillInput('essay-learner', 'Student A');
+    fillInput('essay-genre', '议论文 / Argument');
     fillCurrentForm('One', 'Important ideas are important. An important idea matters.');
     clickNamedButton('Analyze and save');
     expect(document.querySelector('.writing-advice')).toBeNull();
@@ -72,6 +74,9 @@ describe('analysis and automatic save', () => {
     act(() => root?.unmount());
     document.body.replaceChildren();
     root = mountApp();
+    clickNamedButton('Across essays');
+    fillInput('scope-learner', 'Student A');
+    fillInput('scope-genre', '议论文 / Argument');
     expect(document.querySelector('.writing-advice')?.textContent).toContain('important');
 
     clickNamedButton(/^History/);
