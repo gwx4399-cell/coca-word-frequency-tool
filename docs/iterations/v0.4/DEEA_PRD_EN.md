@@ -1,5 +1,5 @@
 # DEEA v0.4 product requirements
-Date: 2026-11-03. Status: implemented on local branch `improve/reliable-vocabulary-review`; no PR, merge or public deployment yet.
+Date: 2026-11-03. Status: implemented on branch `improve/reliable-vocabulary-review`; [draft PR #10](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/10), not merged or publicly deployed.
 Baseline: `984ef1cc86c9c922a614856bd7caff5329233b38`.
 
 ## Problem and scope

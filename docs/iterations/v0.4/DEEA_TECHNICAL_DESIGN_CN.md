@@ -1,5 +1,5 @@
 # DEEA v0.4 技术设计
-日期：2026-11-03。状态：本地分支已实现；未合并或部署；PR 尚未创建。
+日期：2026-11-03。状态：[草稿 PR #10](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/10) 已在分支实现；未合并或部署。
 
 ## 分析与证据
 `tokenize.ts` 为 token 保留 JavaScript 字符串偏移 start/end，不改写原文。`analyzeEssay.ts` 仍使用有限词表和确定性候选顺序；新增 wrote/written、took/taken、gave/given、chose/chosen 及 added 的显式归并约定。双写尾辅音的删减至少保留三字母，避免 adding → ad，现有 running → run、using → use、caring → care 回归保持。

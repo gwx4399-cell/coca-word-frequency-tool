@@ -2,7 +2,7 @@
 
 > 一篇作文能告诉我们某个词出现了几次；多篇作文才能让教师和学习者看到它是否反复出现在不同写作任务中。DEEA 把单篇分析、作文历史与跨篇证据连在一起，帮助用户决定**哪些表达值得回到原句核查**。
 
-**当前分支：v0.4 原型，已在本地实现，尚未合并或发布。**DEEA 在界面中展开为 Academic English Evolution Agent。工具在浏览器本地运行，使用 COCA 衍生的高频词表辅助词形归并；写作提示由明确的规则和少量人工词表生成。名称中的 Agent 是产品命名，**当前没有接入 AI 模型，不提供自动评分或语义诊断**。
+**当前分支：v0.4 原型，[草稿 PR #10](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/10) 已实现，尚未合并或发布。**DEEA 在界面中展开为 Academic English Evolution Agent。工具在浏览器本地运行，使用 COCA 衍生的高频词表辅助词形归并；写作提示由明确的规则和少量人工词表生成。名称中的 Agent 是产品命名，**当前没有接入 AI 模型，不提供自动评分或语义诊断**。
 
 v0.4 增加原句定位与高亮、低次数词搜索、JSON 备份恢复和损坏历史保护，修正 adding → ad 等归并问题。[三轮模拟体验记录](./docs/iterations/v0.4/USABILITY_REVIEW_CN.md) · [中文 PRD](./docs/iterations/v0.4/DEEA_PRD_CN.md) · [English PRD](./docs/iterations/v0.4/DEEA_PRD_EN.md)。
 

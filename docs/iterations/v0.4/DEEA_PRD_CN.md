@@ -1,5 +1,5 @@
 # DEEA v0.4 产品需求文档
-日期：2026-11-03。状态：本地分支 `improve/reliable-vocabulary-review` 已实现；尚未合并、发布或创建 PR。
+日期：2026-11-03。状态：分支 `improve/reliable-vocabulary-review` 已实现；[草稿 PR #10](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/10)，尚未合并或发布。
 基线：`984ef1cc86c9c922a614856bd7caff5329233b38`。
 
 ## 用户问题与范围

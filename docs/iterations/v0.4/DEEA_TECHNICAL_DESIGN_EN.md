@@ -1,5 +1,5 @@
 # DEEA v0.4 technical design
-Date: 2026-11-03. Status: implemented locally; no merge, deployment or PR yet.
+Date: 2026-11-03. Status: implemented in [draft PR #10](https://github.com/gwx4399-cell/coca-word-frequency-tool/pull/10); not merged or deployed.
 
 ## Analysis and evidence
 Tokens retain UTF-16 start/end offsets into unchanged source text. The deterministic analyzer adds explicit write, take, give, choose and added-form conventions. Removing a doubled final consonant must leave at least three letters, preventing adding → ad. Existing run, use and care cases remain covered. A standalone ad remains ad, and ambiguous exact entries such as saw remain unchanged. Added → add is a declared convention, not contextual part-of-speech recognition.
